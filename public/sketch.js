@@ -9,10 +9,12 @@ let pallete;
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
+    //createCanvas(800, 600);
     screen_ratio = windowWidth/windowHeight;
 
     console.log("a");
     main_graph = new Graph(width,height);
+                 //new Graph(120, 100);
 
     pallete = {
         'accent': color(224, 29, 88),
@@ -29,7 +31,7 @@ function setup() {
 
 function draw() {
     image(main_graph.static_gb,0,0);
-    image(main_graph.marks_gb,0,0);
+    image(main_graph.trace_gb,0,0);
 }
 
 

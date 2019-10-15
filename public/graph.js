@@ -39,15 +39,18 @@ class Graph {
         this.static_gb = createGraphics(w,h);
         this.trace_gb  = createGraphics(w,h);
         this.marks_gb  = createGraphics(w,h);
-        origin = createVector(0,0);
-        updateRanges([0, 2*PI, -2, 2]);
-        updateGrid(6);
+        this.origin = createVector(0,0);
+        this.updateRanges([0, 2*PI, -2, 2]);
+        this.updateGrid(6);
     }
 
     updateGrid(subd) {
         let s_gb = this.static_gb;
+        s_gb.background(this.pallete.bg);
         let grid_c = this.pallete.grid;
         let axis_c = this.pallete.axis;
+        let grid_w = this.style.weights.grid;
+        let axis_w = this.style.weights.axis;
 
         let s = this.ranges.span;
         let abs = this.ranges.abs;
@@ -55,21 +58,28 @@ class Graph {
         let h = s.height;
         // We can change all of these
         let step = createVector(
-            w/subd,
-            w/subd
+            h/subd,
+            h/subd
         );
 
         for(let i = 0; i < w; i += step.x) {
             let x = abs.min.x + i;
+            s_gb.strokeWeight(grid_w);
             s_gb.stroke(grid_c);
-            if(floor(i) == origin.x) s_gb.stroke(axis_c);
+            if(floor(i) == origin.x) {
+                s_gb.strokeWeight(axis_w);
+                s_gb.stroke(axis_c);
+            }
             s_gb.line(x,abs.min.y, x,abs.max.y);
         }
         for(let j = 0; j < h; j += step.y) {
-            let y = abs.min.y + i;
+            let y = abs.min.y + j;
+            s_gb.strokeWeight(grid_w);
             s_gb.stroke(grid_c);
-            // Origin y axis is centered by default
-            if(floor(j) == origin.y+h/2) s_gb.stroke(axis_c);
+            if(floor(j) == origin.y) {
+                s_gb.strokeWeight(axis_w);
+                s_gb.stroke(axis_c);
+            }
             s_gb.line(abs.min.x,y, abs.max.x,y);
         }
     }
@@ -80,6 +90,7 @@ class Graph {
         let span = this.ranges.span;
         let p = this.style.padding;
         let s = this.static_gb;
+        let o = this.origin;
         let w = s.width;
         let h = s.height;
 
@@ -95,7 +106,25 @@ class Graph {
 
         span.width  = abs.max.x - abs.min.x;
         span.height = abs.max.y - abs.min.y;
-    }
 
-    draw(
+        // Origin y axis is centered by default
+        o.y = h/2;
+    }
+    
+    drawGraph(graph_func) {
+        let t_gb = this.trace_gb;
+        let val = this.ranges.val;
+        let abs = this.ranges.abs;
+        let trace_c = this.pallete.trace;
+        let trace_w = this.style.weights.trace;
+
+        t_gb.strokeWeight(trace_w);
+        t_gb.stroke(trace_c);
+        for(let i = abs.min.x; i < abs.max.x; i++) {
+            let x = i;// - origin.x;
+            let scaled = map(i, abs.min.x, abs.max.x, val.min.x, val.max.x);
+            let y = map(graph_func(scaled), val.min.y, val.max.y, abs.min.y, abs.max.y);// - origin.y;
+            t_gb.point(x,y);
+        }
+    }
 }
