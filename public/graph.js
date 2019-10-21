@@ -3,6 +3,7 @@ class Graph {
     trace_gb;
     marks_gb;
     origin;
+    scale_factor;
 
     ranges = {
         'projection': {
@@ -40,8 +41,9 @@ class Graph {
         this.static_gb = createGraphics(w,h);
         this.trace_gb  = createGraphics(w,h);
         this.marks_gb  = createGraphics(w,h);
-        this.origin = createVector(0,0);
-        this.updateRanges([1,1, 0,2*PI, -2,2]);
+        this.origin = createVector();
+        this.scale_factor = createVector();
+        this.updateRanges([PI,1, 0,2*PI, -2,2]);
         this.updateGrid();
     }
 
@@ -59,16 +61,8 @@ class Graph {
         let orig = this.origin;
         let w = dis.width;
         let h = dis.height;
-        let subd = 10;
-        let aspect = unit.x/unit.y;
-        let scale = (w/subd)/aspect;
-        let step = createVector(unit.x*scale,unit.y*scale);
-        step.y *= aspect;
         //console.log('step = ' + step.toString());
-        let sfactor = createVector(
-            w/proj.width,
-            h/proj.height
-        );
+        let sfactor = this.scale_factor;
 
         // Draw y axis
         s_gb.push();
@@ -81,8 +75,8 @@ class Graph {
         );
         s_gb.strokeWeight(grid_w);
         s_gb.stroke(grid_c);
-        for(let i = 1; i < (w)/step.x; i++) {
-            let offx = i * step.x;
+        for(let i = 1; i < w/2; i++) {
+            let offx = i * unit.x * sfactor.x;
             // One for each side
             s_gb.line(
                 offx,dis.min.y,
@@ -105,8 +99,8 @@ class Graph {
         );
         s_gb.strokeWeight(grid_w);
         s_gb.stroke(grid_c);
-        for(let i = 1; i < (h)/step.y; i++) {
-            let offy = i * step.y;
+        for(let i = 1; i < h/2; i++) {
+            let offy = i * unit.y * sfactor.y;
             s_gb.line(
                 dis.min.x,offy,
                 dis.max.x,offy
@@ -150,6 +144,9 @@ class Graph {
         // Get origin from projection
         orig.x = map(0, proj.min.x,proj.max.x, dis.min.x,dis.max.x);
         orig.y = map(0, proj.min.y,proj.max.y, dis.min.y,dis.max.y);
+
+        this.scale_factor.x = dis.width/proj.width;
+        this.scale_factor.y = dis.height/proj.height;
     }
     
     drawGraph(graph_func) {
@@ -167,24 +164,28 @@ class Graph {
         let trace_c = this.pallete.trace;
         let trace_w = this.style.weights.trace;
         
-        let prev = createVector(dis.min.x,0);
+        let prev = createVector(0,0);
 
-        let sfactor = createVector(
-            w/p.width,
-            h/p.height
-        );
+        let sfactor = this.scale_factor;
 
         t_gb.push();
         t_gb.clear();
-        t_gb.translate(0, orig.y);
+        t_gb.translate(orig.x, orig.y);
         t_gb.strokeWeight(trace_w);
         t_gb.stroke(trace_c);
-        for(let x = p.min.x; x < p.max.x; x+=step) {
-            let sx = dis.min.x + x * sfactor.x;
-            let porig = map(orig.x, dis.min.x, dis.max.x, p.min.x, p.max.x);
-            let inx = x - porig;
-            // "Inverted" because y grows upwards, against the coord system
-            let y = graph_func(inx) * sfactor.y * -1;
+        let x = p.min.x;
+        let sx = x * sfactor.x;
+        let porig = map(orig.x, dis.min.x, dis.max.x, p.min.x, p.max.x);
+        let inx = x - porig;
+        // Inverted because y grows upwards, against the coord system
+        let y = graph_func(inx) * sfactor.y * -1;
+        prev.x = sx;
+        prev.y = y;
+        for(; x < p.max.x; x+=step) {
+            sx = x * sfactor.x;
+            porig = map(orig.x, dis.min.x, dis.max.x, p.min.x, p.max.x);
+            inx = x - porig;
+            y = graph_func(inx) * sfactor.y * -1;
             t_gb.line(prev.x,prev.y, sx,y);
             prev.x = sx;
             prev.y = y;

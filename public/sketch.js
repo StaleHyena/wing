@@ -37,7 +37,7 @@ function draw() {
             mouseX, 0, width,
             0, 4*PI
         );
-        main_graph.updateRanges([1,1 ,-2*PI,r, -2,2]);
+        main_graph.updateRanges([PI,1 ,-2*PI,r, -2,2]);
         main_graph.updateGrid();
         main_graph.drawGraph(demo_funcs['sin']);
     }
