@@ -17,6 +17,7 @@ class Graph {
             'width':0,
             'height':0,
         },
+        'unit': createVector(0,0),
     }
     pallete = {
         'bg': color(42),
@@ -40,11 +41,11 @@ class Graph {
         this.trace_gb  = createGraphics(w,h);
         this.marks_gb  = createGraphics(w,h);
         this.origin = createVector(0,0);
-        this.updateRanges([0, 2*PI, -2, 2]);
+        this.updateRanges([1,1, 0,2*PI, -2,2]);
         this.updateGrid();
     }
 
-    updateGrid(cell_size) {
+    updateGrid() {
         let s_gb = this.static_gb;
         s_gb.background(this.pallete.bg);
         let grid_c = this.pallete.grid;
@@ -52,40 +53,74 @@ class Graph {
         let grid_w = this.style.weights.grid;
         let axis_w = this.style.weights.axis;
 
-        let dis = this.ranges.display;
+        let unit = this.ranges.unit;
+        let dis  = this.ranges.display;
         let proj = this.ranges.projection;
         let orig = this.origin;
         let w = dis.width;
         let h = dis.height;
-
-        let cell_size = createVector(
+        let subd = 10;
+        let aspect = unit.x/unit.y;
+        let scale = (w/subd)/aspect;
+        let step = createVector(unit.x*scale,unit.y*scale);
+        step.y *= aspect;
+        //console.log('step = ' + step.toString());
+        let sfactor = createVector(
             w/proj.width,
             h/proj.height
         );
-        //console.log('display = ('+dis.width+','+dis.height+')');
-        console.log('cell_size = '+cell_size.toString());
 
-        for(let x = dis.min.x; x < w; x += cell_size.x) {
-            s_gb.strokeWeight(grid_w);
-            s_gb.stroke(grid_c);
-            if(floor(x) == orig.x) {
-                s_gb.strokeWeight(axis_w);
-                s_gb.stroke(axis_c);
-            }
-            s_gb.line(x,0, x,h);
+        // Draw y axis
+        s_gb.push();
+        s_gb.translate(orig.x,0);
+        s_gb.strokeWeight(axis_w);
+        s_gb.stroke(axis_c);
+        s_gb.line(
+            0,dis.min.y,
+            0,dis.max.y
+        );
+        s_gb.strokeWeight(grid_w);
+        s_gb.stroke(grid_c);
+        for(let i = 1; i < (w)/step.x; i++) {
+            let offx = i * step.x;
+            // One for each side
+            s_gb.line(
+                offx,dis.min.y,
+                offx,dis.max.y
+            );
+            s_gb.line(
+                -offx,dis.min.y,
+                -offx,dis.max.y
+            );
         }
-        for(let y = dis.min.y; y < h; y += cell_size.y) {
-            s_gb.strokeWeight(grid_w);
-            s_gb.stroke(grid_c);
-            if(floor(y) == orig.y) {
-                s_gb.strokeWeight(axis_w);
-                s_gb.stroke(axis_c);
-            }
-            s_gb.line(0,y, w,y);
+        s_gb.pop();
+        // And x axis
+        s_gb.push();
+        s_gb.translate(0,orig.y);
+        s_gb.strokeWeight(axis_w);
+        s_gb.stroke(axis_c);
+        s_gb.line(
+            dis.min.x,0,
+            dis.max.x,0
+        );
+        s_gb.strokeWeight(grid_w);
+        s_gb.stroke(grid_c);
+        for(let i = 1; i < (h)/step.y; i++) {
+            let offy = i * step.y;
+            s_gb.line(
+                dis.min.x,offy,
+                dis.max.x,offy
+            );
+            s_gb.line(
+                dis.min.x,-offy,
+                dis.max.x,-offy
+            );
         }
+        s_gb.pop();
     }
 
     updateRanges(vals) {
+        let unit = this.ranges.unit;
         let proj = this.ranges.projection;
         let dis = this.ranges.display;
         let pad = this.style.padding;
@@ -94,10 +129,14 @@ class Graph {
         let w = s_gb.width;
         let h = s_gb.height;
 
-        proj.min.x = vals[0];
-        proj.max.x = vals[1];
-        proj.min.y = vals[2];
-        proj.max.y = vals[3];
+        unit.x = vals[0];
+        unit.y = vals[1];
+        //console.log('unit = '+unit.toString());
+
+        proj.min.x  = vals[2];
+        proj.max.x  = vals[3];
+        proj.min.y  = vals[4];
+        proj.max.y  = vals[5];
         proj.width  = proj.max.x - proj.min.x;
         proj.height = proj.max.y - proj.min.y;
 
@@ -111,36 +150,45 @@ class Graph {
         // Get origin from projection
         orig.x = map(0, proj.min.x,proj.max.x, dis.min.x,dis.max.x);
         orig.y = map(0, proj.min.y,proj.max.y, dis.min.y,dis.max.y);
-        console.log('origin = ('+orig.x+','+orig.y+')');
     }
     
     drawGraph(graph_func) {
         let t_gb = this.trace_gb;
         let p   = this.ranges.projection;
         let dis = this.ranges.display;
-        let dw = dis.width;
-        let dh = dis.height;
+        let unit = this.ranges.unit;
+        let w = dis.width;
+        let h = dis.height;
         let orig = this.origin;
         
-        let resolution = 10;
+        let resolution = 1000;
         let step = p.width / resolution;
 
         let trace_c = this.pallete.trace;
         let trace_w = this.style.weights.trace;
         
-        let prev = createVector(dis.min.x,orig.y);
+        let prev = createVector(dis.min.x,0);
 
+        let sfactor = createVector(
+            w/p.width,
+            h/p.height
+        );
+
+        t_gb.push();
         t_gb.clear();
+        t_gb.translate(0, orig.y);
         t_gb.strokeWeight(trace_w);
         t_gb.stroke(trace_c);
-        for(let x = p.min.x; x < p.max.x; x += step) {
-            let sx = map(x, p.min.x,p.max.x, dis.min.x,dis.max.x);
-            let input_x = x;
+        for(let x = p.min.x; x < p.max.x; x+=step) {
+            let sx = dis.min.x + x * sfactor.x;
+            let porig = map(orig.x, dis.min.x, dis.max.x, p.min.x, p.max.x);
+            let inx = x - porig;
             // "Inverted" because y grows upwards, against the coord system
-            let y = map(graph_func(input_x), p.min.y,p.max.y, dis.max.y,dis.min.y);
+            let y = graph_func(inx) * sfactor.y * -1;
             t_gb.line(prev.x,prev.y, sx,y);
             prev.x = sx;
             prev.y = y;
         }
+        t_gb.pop();
     }
 }

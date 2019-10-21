@@ -35,9 +35,9 @@ function draw() {
     if(mouseIsPressed) {
         let r = map(
             mouseX, 0, width,
-            PI/6, 2*PI
+            0, 4*PI
         );
-        main_graph.updateRanges([-r,r, -2,2]);
+        main_graph.updateRanges([1,1 ,-2*PI,r, -2,2]);
         main_graph.updateGrid();
         main_graph.drawGraph(demo_funcs['sin']);
     }
