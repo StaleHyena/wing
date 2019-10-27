@@ -5,6 +5,7 @@ class Graph {
   origin;
   scale_factor;
   cur_graph_func;
+  continuity_threshold = 100;
 
   ranges = {
     'projection': {
@@ -32,16 +33,16 @@ class Graph {
   }
   style = {
     'weights': {
-      'grid': 2,
+      'grid': 0.5,
       'axis':3.5,
       'trace':4,
       'mark':3,
     },
     //'padding': 16,
-    'padding': 64,
+    'padding': 12,
     'text': {
-      'size': 12,
-      'spacing': 4
+      'size': 32,
+      'spacing': 60,
     },
     'mark_size': 10,
   }
@@ -85,7 +86,7 @@ class Graph {
     );
     s_gb.strokeWeight(grid_w);
     s_gb.stroke(grid_c);
-    for(let i = 1; i <= (((proj.width)/unit.x)/2); i++) {
+    for(let i = 1; i <= (((proj.width)/unit.x)/2)+1; i++) {
       let offx = i * unit.x * sfactor.x;
       // One for each side
       s_gb.line(
@@ -109,7 +110,7 @@ class Graph {
     );
     s_gb.strokeWeight(grid_w);
     s_gb.stroke(grid_c);
-    for(let i = 1; i <= (((-proj.height)/unit.y)/2); i++) {
+    for(let i = 1; i <= (((-proj.height)/unit.y)/2)+1; i++) {
       let offy = i * unit.y * sfactor.y;
       s_gb.line(
         dis.min.x,offy,
@@ -197,7 +198,12 @@ class Graph {
       porig = map(orig.x, dis.min.x, dis.max.x, p.min.x, p.max.x);
       inx = x - porig;
       y = graph_func(inx) * sfactor.y;
-      t_gb.line(prev.x,prev.y, sx,y);
+      let deltay = abs(y - prev.y);
+      if(deltay > this.continuity_threshold) {
+        t_gb.point(sx,y);
+      } else {
+        t_gb.line(prev.x,prev.y, sx,y);
+      }
       prev.x = sx;
       prev.y = y;
     }
@@ -214,21 +220,56 @@ class Graph {
     let sfactor = this.scale_factor;
     let px = (x_sel - orig.x) / sfactor.x;
     let py = graph_func(px);
+    let accentm_y = py*sfactor.y;
 
     let m_c = this.pallete.mark;
     let am_c = this.pallete.accent_mark;
     let m_w = this.style.weights.mark;
     let size = this.style.mark_size;
 
+    let txt_s = this.style.text.size;
+    let txt_sp = this.style.text.spacing;
+    let txt_c = this.pallete.text;
+
     m_gb.clear();
     m_gb.push();
     m_gb.stroke(m_c);
     m_gb.strokeWeight(m_w);
     m_gb.line(x_sel,dis.min.y, x_sel,dis.max.y);
-    m_gb.translate(0,orig.y);
+    m_gb.translate(0,orig.y); // -
     m_gb.noStroke();
     m_gb.fill(am_c);
-    m_gb.circle(x_sel, py*sfactor.y, size);
+    m_gb.circle(x_sel, accentm_y, size);
+    // txt
+    m_gb.translate(x_sel + txt_sp, accentm_y-txt_sp);
+    m_gb.textSize(txt_s);
+    m_gb.textAlign(CENTER);
+    m_gb.fill(txt_c);
+    let roundx = round(px*1000)/1000;
+    let roundy = round(py*1000)/1000;
+    m_gb.text('('+roundx+','+roundy+')',0,0);
     m_gb.pop();
+  }
+
+  disToProj(ix,iy) {
+    let d = this.ranges.display;
+    let p = this.ranges.projection;
+    let x = constrain(ix, d.min.x, d.max.x);
+    let y = constrain(iy, d.min.y, d.max.y);
+    return [
+      map(x, d.min.x,d.max.x, p.min.x,p.max.x),
+      map(y, d.min.y,d.max.y, p.min.y,p.max.y)
+    ];
+  }
+
+  projToDis(ix,iy) {
+    let d = this.ranges.display;
+    let p = this.ranges.projection;
+    let x = constrain(ix, p.min.x, p.max.x);
+    let y = constrain(iy, p.min.y, p.max.y);
+    return [
+      map(x, p.min.x,p.max.x, d.min.x,d.max.x),
+      map(y, p.min.y,p.max.y, d.min.y,d.max.y)
+    ];
   }
 }
