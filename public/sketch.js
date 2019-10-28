@@ -12,9 +12,16 @@ function setup() {
 }
 
 function draw() {
-  let f = demo.f;
-  f(vals, demo_gb);
-  image(demo_gb, 0,0);
+  background(0);
+  if(demo != null) {
+    let f = demo.f;
+    f(vals, demo_gb);
+    image(demo_gb, 0,0);
+  } else {
+    fill(255);
+    textAlign(CENTER);
+    text("Demo desconhecida!", width/2, height/2);
+  }
 }
 
 function setupNet() {
@@ -24,7 +31,6 @@ function setupNet() {
   });
   socket.on('demo', (d) => {
     demo = demoFromName(d);
-    console.log(demo);
   });
 }
 

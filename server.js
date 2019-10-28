@@ -8,7 +8,7 @@ const io = socket(server);
 app.use(express.static('public'));
 
 let vals = [0,0];
-let demo = "grey";
+let demo = "greys"; // hard-coded default
 
 io.sockets.on('connection', (socket) => {
   socket.emit('vals', vals);
