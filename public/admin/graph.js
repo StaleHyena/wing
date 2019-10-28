@@ -42,7 +42,7 @@ class Graph {
     'padding': 12,
     'text': {
       'size': 32,
-      'spacing': 60,
+      'spacing': 40,
     },
     'mark_size': 10,
   }
