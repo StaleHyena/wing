@@ -27,6 +27,7 @@ let demos = [
     }
     */
 ];
+module.exports.demos = demos;
 
 function demoFromName(name) {
   let arr = demos;

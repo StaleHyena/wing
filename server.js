@@ -4,11 +4,13 @@ const socket = require('socket.io');
 const process = require('process');
 const server = app.listen(8080);
 const io = socket(server);
+const __import__demos = require('./public/demos.js');
+const demos = __import__demos.demos;
 
 app.use(express.static('public'));
 
 let vals = [0,0];
-let demo = "greys"; // hard-coded default
+let demo = demos[0].name; // hard-coded default
 
 io.sockets.on('connection', (socket) => {
   socket.emit('vals', vals);
