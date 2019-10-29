@@ -18,6 +18,8 @@ let mouseGracePeriod;
 
 let pallete;
 
+let adminValidated;
+
 function setup() {
   canvas = createCanvas(windowWidth, windowHeight - windowHeight*UI_height);
   canvas.mousePressed(updateMouse);
@@ -45,15 +47,21 @@ function setup() {
   main_graph.updateRanges([PI/2,1, -PI,5*PI, -1.2,1.2]);
   main_graph.updateGrid();
 
-  setupUI((graph) => {
-    cur_graph = graph;
-    main_graph.drawGraph(graph.f);
-  }, (demo) => {
-    emitData('demo', demo.name);
-  }, (step) => {
-    getrektscrub_step = step;
-  }, Playpause);
+  adminValidated = false;
   setupNet();
+
+  setupUI(
+    (graph) => {
+      cur_graph = graph;
+      main_graph.drawGraph(graph.f);
+    },
+    (demo) => {
+      emitData('demo', demo.name);
+    },
+    (step) => {
+      getrektscrub_step = step;
+    }, Playpause
+  );
 }
 
 function draw() {
@@ -67,7 +75,11 @@ function draw() {
   image(main_graph.marks_gb,0,0);
   let vals = main_graph.disToProj(getX(),0);
   vals[1] = cur_graph.f(vals[0]);
-  emitData('vals', vals);
+
+  // Don't send data if we aren't definitely admin
+  if(adminValidated) {
+    emitData('vals', vals);
+  }
 
   if(playing) {
     getrektscrub += getrektscrub_step;
@@ -81,15 +93,26 @@ function draw() {
 }
 
 function setupNet() {
+  noLoop(); // As socket can turn undefined based on the acknowledgement
   socket = io();
+  socket.emit('admin', null, (amAdmin) => {
+    adminValidated = amAdmin;
+    if(!amAdmin) {
+      socket.disconnect();
+    }
+    loop();
+  }); // try to become admin
   socket.on('clients', (c) => {
     num_clients = c - 1;
     updateClientCount(num_clients);
   });
+  socket.on('disconnect', (reason) => {
+    console.error('Disconnected from server -- ' + reason);
+  });
 }
 
 function emitData(name, data) {
-  if(socket) {
+  if(socket.connected) {
     socket.emit(name, data);
   } else {
     console.error('Error: no connection!');
@@ -111,7 +134,6 @@ function updateMouse() {
   } else {
     mousePressed = false;
   }
-  console.log('p');
 }
 
 function Playpause() {
