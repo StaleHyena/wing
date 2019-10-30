@@ -25,7 +25,7 @@ let demos = [
       let r = (min(width,height)/2) * 0.8;
       let c = createVector(width/2, height/2);
 
-      gb.background(24);
+      gb.background(50);
       gb.noFill();
 
       gb.strokeWeight(0.8);
@@ -36,16 +36,24 @@ let demos = [
       gb.strokeWeight(3);
       gb.stroke(240);
       gb.circle(c.x, c.y, r*2);
-      let ep = createVector(); // endpoint
+
+      let ep = createVector(0,0); // endpoint
+      // hyp
       ep.x = c.x + r * cos(vals[0]);
       ep.y = c.y - r * sin(vals[0]);
       gb.line(c.x, c.y, ep.x, ep.y);
-      
+      // sin
       gb.stroke(80,255,80);
       gb.line(ep.x,ep.y, ep.x, c.y);
-
+      // cos
       gb.stroke(80,80,255);
       gb.line(ep.x,ep.y, c.x, ep.y);
+      // tan
+      let tep = createVector(0,0);
+      tep.x = c.x + r/cos(vals[0]);
+      tep.y = c.y
+      gb.stroke(255,80,80);
+      gb.line(ep.x,ep.y, tep.x,tep.y);
     }
   },
   {
