@@ -26,6 +26,17 @@ let demos = [
       gb.stroke(
     }
     */
+   {
+     'name' : 'ball',
+     'f' :(vals, gb) => {
+       gb.colorMode(RGB);
+       gb.fill(253,102,0);
+       gb.noStroke();
+       let r = 700
+       gb.background(0,120,255)
+       gb.circle(width/2, height/2, r*vals[1])
+     }
+   }
 ];
 module.exports.demos = demos;
 
