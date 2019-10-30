@@ -9,7 +9,7 @@ let demos = [
     }
   },
   {
-    'name':'gay',
+    'name':'colours',
     'f':(vals, gb) => {
       gb.colorMode(HSB, 360);
       gb.noStroke();
