@@ -65,9 +65,9 @@ let demos = [
       gb.colorMode(RGB);
       gb.fill(253,102,0);
       gb.noStroke();
-      let r = 700
-      gb.background(0,120,255)
-      gb.circle(width/2, height/2, r*vals[1])
+      let d = min(height,width) * 0.9;
+      gb.background(0,120,255);
+      gb.circle(width/2, height/2, d*vals[1]);
     }
   },
   {
@@ -76,14 +76,14 @@ let demos = [
       gb.colorMode(RGB);
       gb.background(0);
       gb.noStroke();
-      let r = 700;
+      let d = min(height,width)* 0.9;
       let y = vals[1];
       if(y>0) {
         gb.fill(253,102,0);
       } else {
         gb.fill(2,153,255);
       }
-      gb.circle(width/2, height/2, r*y);
+      gb.circle(width/2, height/2, d*y);
     },
   },
 ];
