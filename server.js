@@ -24,23 +24,22 @@ function setupNet() {
     socket.emit('demo', demo);
     console.log('Socket ' + socket.id + ' has connected.');
 
-    socket.on('admin', (d, ack_func) => {
+    socket.on('admin', () => {
       if(admin_socket == -1) {
         admin_socket = socket.id;
         console.log(socket.id + ' is the new admin.');
-        ack_func(true);
 
         socket.on('vals', (v) => {
           vals = v;
-          socket.broadcast.emit('vals', vals);
+          socket.broadcast.volatile.emit('vals', vals);
         });
         socket.on('demo', (d) => {
           demo = d;
-          socket.broadcast.emit('demo', demo);
+          socket.broadcast.volatile.emit('demo', demo);
         });
       } else {
         console.log(socket.id + ' failed to become admin.');
-        ack_func(false);
+        socket.disconnect();
       }
     });
 

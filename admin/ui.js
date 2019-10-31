@@ -36,13 +36,10 @@ function setupUI(onNG, onND, onNS, onPPB) {
   onNewDemo = onND;
   onNewStep = onNS;
   onPlaypause = onPPB;
+
   func_sel.changed(newGraphSelected);
   demo_sel.changed(newDemoSelected);
   playerStep_s.changed(newStepSelected);
-
-  newGraphSelected(); // Call to get default
-  newDemoSelected();
-  newStepSelected();
   playpause_btn.mousePressed(onPPB);
 }
 
@@ -67,9 +64,10 @@ function newDemoSelected() {
   console.log('New demo selected: ' + cur_demo.name + ' ' + cur_demo.f);
   onNewDemo(cur_demo);
 }
- function newStepSelected() {
-   onNewStep(playerStep_s.value());
- }
+
+function newStepSelected() {
+  onNewStep(playerStep_s.value());
+}
 
 function updateClientCount(x) {
   clients_p.elt.innerText = String(x) + " clientes conectados";

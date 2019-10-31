@@ -1,6 +1,7 @@
 let demowin_gb;
 let main_graph;
 let socket;
+let net_error;
 let canvas;
 
 let screen_ratio;
@@ -8,6 +9,7 @@ let cur_graph;
 let cur_demo;
 let num_clients;
 
+let packet_data;
 let playing;
 let getrektscrub;
 let getrektscrub_step;
@@ -18,12 +20,10 @@ let mouseGracePeriod;
 
 let pallete;
 
-let adminValidated;
-
 function setup() {
   canvas = createCanvas(windowWidth, windowHeight - windowHeight*UI_height);
-  canvas.mousePressed(updateMouse);
-  canvas.mouseReleased(updateMouse);
+  canvas.mousePressed(onMousePressed);
+  canvas.mouseReleased(onMouseReleased);
   screen_ratio = windowWidth/windowHeight;
 
   main_graph = new Graph(width,height);
@@ -36,9 +36,6 @@ function setup() {
     'text': color(8, 15, 38),
   }
   
-  playing = false;
-  getrektscrub = 0;
-
   mousePressed = false;
   mouseGracePeriod = 0;
 
@@ -46,9 +43,9 @@ function setup() {
 
   main_graph.updateRanges([PI/2,1, -PI,5*PI, -1.2,1.2]);
   main_graph.updateGrid();
-
-  adminValidated = false;
-  setupNet();
+  
+  playing = false;
+  getrektscrub = main_graph.ranges.display.min.x;
 
   setupUI(
     (graph) => {
@@ -62,60 +59,69 @@ function setup() {
       getrektscrub_step = step;
     }, Playpause
   );
+
+  // FIXME: UI system is awful, small fix for now
+  setupNet(() => {
+    newGraphSelected();
+    newDemoSelected();
+    newStepSelected();
+  });
 }
 
 function draw() {
-  background(0);
-  if(mouseIsPressed) {
+  if(!cur_graph) { return; }
+  if(mouseIsPressed && mouseButton == RIGHT) {
     main_graph.drawGraph(cur_graph.f);
   }
-  main_graph.drawSelection(getX());
-  image(main_graph.static_gb,0,0);
-  image(main_graph.trace_gb,0,0);
-  image(main_graph.marks_gb,0,0);
-  let vals = main_graph.disToProj(getX(),0);
-  vals[1] = cur_graph.f(vals[0]);
-
-  // Don't send data if we aren't definitely admin
-  if(adminValidated) {
-    emitData('vals', vals);
+  
+  let selx = getX();
+  // x can come from mouse, from scrubber or not come at all
+  if(selx) {
+    main_graph.drawSelection(getX());
+    packet_data = main_graph.disToProj(getX(),0);
+    packet_data[1] = cur_graph.f(packet_data[0]);
+    emitData('vals', packet_data);
   }
 
   if(playing) {
     getrektscrub += getrektscrub_step;
-    if(getrektscrub > width) {
-      getrektscrub = 0;
+    if(getrektscrub > main_graph.ranges.display.max.x) {
+      getrektscrub = main_graph.ranges.display.min.x;
     }
   }
   else if(mouseGracePeriod > 0) {
     mouseGracePeriod -= 1;
   }
+  image(main_graph.static_gb,0,0);
+  image(main_graph.trace_gb,0,0);
+  image(main_graph.marks_gb,0,0);
 }
 
-function setupNet() {
-  noLoop(); // As socket can turn undefined based on the acknowledgement
+function setupNet(callback = undefined) {
   socket = io();
-  socket.emit('admin', null, (amAdmin) => {
-    adminValidated = amAdmin;
-    if(!amAdmin) {
-      socket.disconnect();
+  net_error = false;
+  
+  socket.on('connect', () => {
+    socket.on('clients', (c) => {
+      num_clients = c - 1;
+      updateClientCount(num_clients);
+    });
+    socket.on('disconnect', (reason) => {
+      console.error('Disconnected from server -- ' + reason);
+    });
+    emitData('admin');
+    if(callback){
+      callback();
     }
-    loop();
-  }); // try to become admin
-  socket.on('clients', (c) => {
-    num_clients = c - 1;
-    updateClientCount(num_clients);
-  });
-  socket.on('disconnect', (reason) => {
-    console.error('Disconnected from server -- ' + reason);
   });
 }
 
-function emitData(name, data) {
+function emitData(name, data = undefined) {
   if(socket.connected) {
     socket.emit(name, data);
-  } else {
+  } else if(!net_error) {
     console.error('Error: no connection!');
+    net_error = true;
   }
 }
 
@@ -125,15 +131,20 @@ function getX() {
   } else if (mousePressed) {
     return mouseX;
   }
-  return -1;
+  return undefined;
 }
 
-function updateMouse() {
+function onMousePressed() {
+  let t = mouseGracePeriod == 0 && mouseIsPressed;
   if(mouseGracePeriod == 0 && mouseIsPressed) {
     mousePressed = true;
   } else {
     mousePressed = false;
   }
+}
+
+function onMouseReleased() {
+  mousePressed = false;
 }
 
 function Playpause() {
