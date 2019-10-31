@@ -25,6 +25,7 @@ let demos = [
       let r = (min(width,height)/2) * 0.8;
       let c = createVector(width/2, height/2);
 
+      gb.colorMode(RGB);
       gb.background(50);
       gb.noFill();
 
@@ -45,9 +46,11 @@ let demos = [
       // sin
       gb.stroke(80,255,80);
       gb.line(ep.x,ep.y, ep.x, c.y);
+      gb.line(c.x,ep.y, c.x,c.y);
       // cos
       gb.stroke(80,80,255);
       gb.line(ep.x,ep.y, c.x, ep.y);
+      gb.line(ep.x,c.y, c.x,c.y);
       // tan
       let tep = createVector(0,0);
       tep.x = c.x + r/cos(vals[0]);
@@ -58,7 +61,7 @@ let demos = [
   },
   {
     'name' : 'ball',
-    'f' :(vals, gb) => {
+    'f': (vals, gb) => {
       gb.colorMode(RGB);
       gb.fill(253,102,0);
       gb.noStroke();
@@ -66,7 +69,23 @@ let demos = [
       gb.background(0,120,255)
       gb.circle(width/2, height/2, r*vals[1])
     }
-  }
+  },
+  {
+    'name': 'ball inv',
+    'f': (vals, gb) => {
+      gb.colorMode(RGB);
+      gb.background(0);
+      gb.noStroke();
+      let r = 700;
+      let y = vals[1];
+      if(y>0) {
+        gb.fill(253,102,0);
+      } else {
+        gb.fill(2,153,255);
+      }
+      gb.circle(width/2, height/2, r*y);
+    },
+  },
 ];
 module.exports.demos = demos;
 
