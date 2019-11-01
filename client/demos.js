@@ -57,6 +57,14 @@ let demos = [
       tep.y = c.y
       gb.stroke(255,80,80);
       gb.line(ep.x,ep.y, tep.x,tep.y);
+
+      //let a = (vals[0] > 0)? vals[0] % TAU : (TAU - vals[0]) % TAU;
+      let x_sign = (cos(vals[0])>=0)? 1 : -1;
+      let y_sign = 1;
+      let tsp_x = c.x + x_sign*r;
+      tep.x = tsp_x;
+      tep.y = c.y - x_sign*r*tan(vals[0]);
+      gb.line(tsp_x,c.y, tep.x,tep.y);
     }
   },
   {
