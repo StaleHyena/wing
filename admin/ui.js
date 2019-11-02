@@ -1,60 +1,40 @@
-let UI_height = 0.1; //%
+function setupUI() {
+  ui_div = select('#ui-bar');
+  playpause_btn  = select('#playpause');
+  graph_sel      = select('#graph-menu');
+  demo_sel       = select('#demo-menu');
+  clientCount_p  = select('#client-counter');
+  step_slider    = createSlider(0.0, 1.0, 0.5, 0.001);
+  step_slider.parent(select('#step-slider'));
+  ui_elts = [playpause_btn,graph_sel,demo_sel,step_slider,clientCount_p];
+  populateMenus();
 
-let func_sel;
-let demo_sel;
-let clients_p;
-let playerStep_s;
-let playpause_btn;
-
-let onNewGraph;
-let onNewDemo;
-let onNewStep;
-let onPlaypause;
-
-function setupUI(onNG, onND, onNS, onPPB) {
-  let x = 10;
-  func_sel = createSelect(false);
-  demo_sel = createSelect(false);
-  playerStep_s = createSlider(0.0, float(width/50), float(width/1000), width/100000);
-  playpause_btn = createButton('\u23ef');
-  playpause_btn.position(x, height - 2*x - playpause_btn.elt.clientHeight);
-  func_sel.position(x, 3*x);
-  let y = func_sel.elt.offsetTop + func_sel.elt.clientHeight + 20;
-  demo_sel.position(x, y);
-
-  for(let i = 0; i<graph_funcs.length; i++) {
-    func_sel.option(graph_funcs[i].name);
-  }
-  for(let i = 0; i<demos.length; i++) {
-    demo_sel.option(demos[i].name);
-  }
-  
-  clients_p = createP();
-  updateClientCount(0);
-
-  onNewGraph = onNG;
-  onNewDemo = onND;
-  onNewStep = onNS;
-  onPlaypause = onPPB;
-
-  func_sel.changed(newGraphSelected);
-  demo_sel.changed(newDemoSelected);
-  playerStep_s.changed(newStepSelected);
-  playpause_btn.mousePressed(onPPB);
+  playpause_btn.mousePressed(Playpause);
+  graph_sel.changed(newGraphIn);
+  demo_sel.changed(newDemoIn);
+  step_slider.changed(newStepIn);
 }
 
-function newGraphSelected() {
-  cur_graph = graphFromName(func_sel.value());
+function populateMenus() {
+  let i,l;
+  l = graph_funcs.length;
+  for(i=0; i<l; i++) {graph_sel.option(graph_funcs[i].name);}
+  l = demos.length;
+  for(i=0; i<l; i++) {demo_sel.option(demos[i].name);}
+}
+
+function newGraphIn() {
+  cur_graph = graphFromName(graph_sel.value());
   if(cur_graph == null) {
     console.log('Couldn\'t find graph named "'
-      + func_sel.value() + '"!');
+      + graph_sel.value() + '"!');
     cur_graph = graph_funcs[0];
   }
   console.log('New graph selected: ' + cur_graph.name + ' ' + cur_graph.f);
-  onNewGraph(cur_graph);
+  graph_d.drawGraph(cur_graph.f);
 }
 
-function newDemoSelected() {
+function newDemoIn() {
   cur_demo = demoFromName(demo_sel.value());
   if(cur_demo == null) {
     console.log('Couldn\'t find demo named "'
@@ -62,13 +42,21 @@ function newDemoSelected() {
     cur_demo = demos[0];
   }
   console.log('New demo selected: ' + cur_demo.name + ' ' + cur_demo.f);
-  onNewDemo(cur_demo);
+  emitData('demo', cur_demo.name);
 }
 
-function newStepSelected() {
-  onNewStep(playerStep_s.value());
+function newStepIn() {
+  // naive exponential slider
+  let v = step_slider.value();
+  scrub_step = map(pow(v,3), 0.0,1.0, 0.0,step_max);
 }
 
 function updateClientCount(x) {
-  clients_p.elt.innerText = String(x) + " clientes conectados";
+  clientCount_p.elt.innerText = String(x) + " clientes conectados";
 }
+
+function Playpause() {
+  scrubbing = !scrubbing;
+  mouseGracePeriod = 20;
+}
+
