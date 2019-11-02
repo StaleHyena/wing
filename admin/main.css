@@ -15,11 +15,13 @@ body {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-  border: 2px solid transparent;
+  border: 0px solid transparent;
   margin: auto;
-  padding: 10px;
+  padding: 8px 18px;
   border-radius: 20px;
   width: 95%;
+  color: white;
+  text-align: center;
 }
 
 #ui-bar > * {
@@ -28,6 +30,8 @@ body {
 
 #ui-bar > p {
   font-size: 20px;
-  color: white;
 }
 
+#ui-bar > div > h2 {
+  margin: 2.5px 0;
+}
