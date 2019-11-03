@@ -1,5 +1,5 @@
 import { demos, demoFromName } from '../client/demos.js';
-import { graph_funcs, graphFromName } from './demos.js';
+import { graph_presets, graphFromName } from './demos.js';
 import { create, all } from 'mathjs/number'
 
 const math = create(all);
@@ -44,8 +44,8 @@ class UserInterface {
 
   populateMenus() {
     let i,l;
-    l = graph_funcs.length;
-    for(i=0; i<l; i++) { this.graph_sel.option(graph_funcs[i].name); }
+    l = graph_presets.length;
+    for(i=0; i<l; i++) { this.graph_sel.option(graph_presets[i].name); }
     l = demos.length;
     for(i=0; i<l; i++) { this.demo_sel.option(demos[i].name); }
   }
@@ -72,7 +72,7 @@ export function newGraphIn() {
   let g = graphFromName(name);
   if(g == null) {
     console.log('Couldn\'t find graph named "' + name + '"!');
-    g = graph_funcs[0];
+    g = graph_presets[0];
   }
   console.log('New graph selected: ' + g.name);
   ui.expr_field.value(g.e);

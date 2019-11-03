@@ -33,14 +33,13 @@ const sketch = (p) => {
     window.p = p; // Make it accessible globally
 
     graph = new Graph(p.width,p.height);
+    graph.updateRanges([p.PI/2,1, -p.PI,5*p.PI, -1.2,1.2]);
+    graph.updateGrid();
+
     num_clients = 0;
 
     mousePressed = false;
     mouseGracePeriod = 0;
-
-    graph.updateRanges([p.PI/2,1, -p.PI,5*p.PI, -1.2,1.2]);
-    graph.updateGrid();
-
     scrubbing = false;
     scrub_pos = graph.ranges.display.min.x;
     step_max = p.width/40;
@@ -57,7 +56,13 @@ const sketch = (p) => {
     }
     function expr(e) {
       cur_expr = e;
-      drawGraph(cur_expr);
+      graph.bindFunc((x) => {
+        try {
+          return e.evaluate({'x':x});
+        } catch (err) {
+          return 0;
+        }
+      });
     }
 
     ui.init();
@@ -79,17 +84,12 @@ const sketch = (p) => {
 
   p.draw = function() {
     if(cur_expr) {
-      if(p.mouseIsPressed && p.mouseButton == p.RIGHT) {
-        graph.drawGraph((x)=>{return cur_expr.evaluate({'x':x})});
-      }
-
       let selx = getX();
       // x can come from mouse, from scrubber or not come at all
       if(selx) {
-        graph.drawSelection(selx);
-        let x = graph.disToProj(selx,0)[0];
-        let y = cur_expr.evaluate({'x':x});
-        net.emitData('vals', [x,y]);
+        graph.selectDisp(selx);
+        let v = graph.getSelection();
+        net.emitData('vals', [v.x,v.y]);
       }
 
       if(scrubbing) {
@@ -111,16 +111,6 @@ const sketch = (p) => {
       p.text("Sem gráfico!", p.width/2, p.height/2);
     }
   }
-}
-
-function drawGraph(e) {
-  graph.drawGraph((x) => {
-    try {
-      return e.evaluate({'x':x})
-    } catch (err) {
-      return 0;
-    }
-  });
 }
 
 function getX() {
