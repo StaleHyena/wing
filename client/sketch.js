@@ -1,31 +1,34 @@
+import p5 from "p5/lib/p5.min.js";
+import socketio from "socket.io-client";
+import { demos, demoFromName } from './demos.js'
+
 let socket;
 let vals;
 let demo;
-let demo_gb;
 
-function setup() {
-  createCanvas(windowWidth, windowHeight);
-  demo_gb = createGraphics(width, height);
-  demo = demos[0];
-  vals = [0,0]
-  setupNet();
-}
+const sketch = (p) => {
+  p.setup = function() {
+    p.createCanvas(window.innerWidth, window.innerHeight);
+    demo = demos[0];
+    vals = [0,0]
+    setupNet();
+  }
 
-function draw() {
-  background(0);
-  if(demo != null) {
-    let f = demo.f;
-    f(vals, demo_gb);
-    image(demo_gb, 0,0);
-  } else {
-    fill(255);
-    textAlign(CENTER);
-    text("Demo desconhecida!", width/2, height/2);
+  p.draw = function() {
+    p.background(0);
+    if(demo != null) {
+      let f = demo.f;
+      f(p, vals);
+    } else {
+      p.fill(255);
+      p.textAlign(p.CENTER);
+      p.text("Demo desconhecida!", p.width/2, p.height/2);
+    }
   }
 }
 
 function setupNet() {
-  socket = io();
+  socket = socketio();
   socket.on('vals', (v) => {
     vals = v;
   });
@@ -33,4 +36,6 @@ function setupNet() {
     demo = demoFromName(d);
   });
 }
+
+new p5(sketch);
 

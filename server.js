@@ -4,8 +4,6 @@ const socket = require('socket.io');
 const process = require('process');
 const server = app.listen(8080);
 const io = socket(server);
-const __import__demos = require('./client/demos.js');
-const demos = __import__demos.demos;
 
 app.use('/admin', express.static('admin'));
 app.use('/libs', express.static('libs'));
@@ -15,7 +13,7 @@ app.all('/', (req, res) => {
 });
 
 let vals = [0,0];
-let demo = demos[0].name; // hard-coded default
+let demo = ""; // hard-coded default
 let admin_socket = -1;
 
 function setupNet() {

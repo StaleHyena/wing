@@ -1,62 +1,98 @@
-function setupUI() {
-  ui_div = select('#ui-bar');
-  playpause_btn  = select('#playpause');
-  graph_sel      = select('#graph-menu');
-  demo_sel       = select('#demo-menu');
-  clientCount_p  = select('#client-counter');
-  step_slider    = createSlider(0.0, 1.0, 0.5, 0.001);
-  step_slider.parent(select('#step-slider'));
-  ui_elts = [playpause_btn,graph_sel,demo_sel,step_slider,clientCount_p];
-  populateMenus();
+import { demos, demoFromName } from '../client/demos.js';
+import { graph_funcs, graphFromName } from './demos.js';
 
-  playpause_btn.mousePressed(Playpause);
-  graph_sel.changed(newGraphIn);
-  demo_sel.changed(newDemoIn);
-  step_slider.changed(newStepIn);
-}
-
-function populateMenus() {
-  let i,l;
-  l = graph_funcs.length;
-  for(i=0; i<l; i++) {graph_sel.option(graph_funcs[i].name);}
-  l = demos.length;
-  for(i=0; i<l; i++) {demo_sel.option(demos[i].name);}
-}
-
-function newGraphIn() {
-  cur_graph = graphFromName(graph_sel.value());
-  if(cur_graph == null) {
-    console.log('Couldn\'t find graph named "'
-      + graph_sel.value() + '"!');
-    cur_graph = graph_funcs[0];
+class UserInterface {
+  constructor() {
+    this.ui_div;
+    this.playpause_btn;
+    this.graph_sel;
+    this.demo_sel;
+    this.clientCount_p;
+    this.step_slider;
+    this.callbacks = new Map();
   }
-  console.log('New graph selected: ' + cur_graph.name + ' ' + cur_graph.f);
-  graph_d.drawGraph(cur_graph.f);
-}
 
-function newDemoIn() {
-  cur_demo = demoFromName(demo_sel.value());
-  if(cur_demo == null) {
-    console.log('Couldn\'t find demo named "'
-      + demo_sel.value() + '"!');
-    cur_demo = demos[0];
+  init() {
+    this.ui_div = p.select('#ui-bar');
+    this.playpause_btn  = p.select('#playpause');
+    this.graph_sel      = p.select('#graph-menu');
+    this.demo_sel       = p.select('#demo-menu');
+    this.clientCount_p  = p.select('#client-counter');
+    this.step_slider    = p.createSlider(0.0, 1.0, 0.5, 0.001);
+    this.step_slider.parent(p.select('#step-slider'));
+    this.callbacks = new Map();
+    this.populateMenus();
+
+    this.playpause_btn.mousePressed(playpause);
+    this.graph_sel.changed(newGraphIn);
+    this.demo_sel.changed(newDemoIn);
+    this.step_slider.changed(newStepIn);
   }
-  console.log('New demo selected: ' + cur_demo.name + ' ' + cur_demo.f);
-  emitData('demo', cur_demo.name);
+
+  ready() {
+    // Initialize with default values
+    newGraphIn();
+    newDemoIn();
+    newStepIn();
+  }
+
+  populateMenus() {
+    let i,l;
+    l = graph_funcs.length;
+    for(i=0; i<l; i++) { this.graph_sel.option(graph_funcs[i].name); }
+    l = demos.length;
+    for(i=0; i<l; i++) { this.demo_sel.option(demos[i].name); }
+  }
+
+  updateClientCount(c) {
+    if(c == 0) {
+      this.clientCount_p.elt.innerText = "Nenhum cliente conectado";
+    }
+    let suff = (c > 1)? " clientes conectados" : " cliente conectado";
+    this.clientCount_p.elt.innerText = String(c) + suff;
+  }
+
+  addCallback(name, f) {
+    this.callbacks.set(name, f);
+  }
 }
 
-function newStepIn() {
-  // naive exponential slider
-  let v = step_slider.value();
-  scrub_step = map(pow(v,3), 0.0,1.0, 0.0,step_max);
+let ui = new UserInterface();
+export default ui;
+
+// Because they are called by events, they don't receive the implict this
+export function newGraphIn() {
+  let name = ui.graph_sel.value();
+  let g = graphFromName(name);
+  if(g == null) {
+    console.log('Couldn\'t find graph named "' + name + '"!');
+    g = graph_funcs[0];
+  }
+  console.log('New graph selected: ' + g.name);
+  let c = ui.callbacks.get('graph');
+  if(c) { c(g); }
 }
 
-function updateClientCount(x) {
-  clientCount_p.elt.innerText = String(x) + " clientes conectados";
+export function newDemoIn() {
+  let name = ui.demo_sel.value();
+  let d = demoFromName(name);
+  if(d == null) {
+    console.log('Couldn\'t find demo named "' + name + '"!');
+    d = demos[0];
+  }
+  console.log('New demo selected: ' + d.name);
+  let c = ui.callbacks.get('demo');
+  if(c) { c(d); }
 }
 
-function Playpause() {
-  scrubbing = !scrubbing;
-  mouseGracePeriod = 20;
+export function newStepIn() {
+  let v = ui.step_slider.value();
+  let c = ui.callbacks.get('step');
+  if(c) { c(v); }
+}
+
+export function playpause() {
+  let c = ui.callbacks.get('play/pause');
+  if(c) { c(); }
 }
 

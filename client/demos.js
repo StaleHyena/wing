@@ -1,101 +1,99 @@
 let demos = [
   {
     'name':'greys',
-    'f':(vals, gb) => {
-      gb.colorMode(RGB);
-      gb.fill(vals[1]*255);
-      gb.noStroke();
-      gb.rect(0,0, width,height);
+    'f':(p, vals) => {
+      p.colorMode(p.RGB);
+      p.fill(vals[1]*255);
+      p.noStroke();
+      p.rect(0,0, p.width,p.height);
     }
   },
   {
     'name':'colours',
-    'f':(vals, gb) => {
-      gb.colorMode(HSB, 360);
-      gb.noStroke();
+    'f':(p, vals) => {
+      p.colorMode(p.HSB, 360);
+      p.noStroke();
       let v = vals[1]*180;
       if(v < 0) { v = 360+v; }
-      gb.fill(v, 360, 200);
-      gb.rect(0,0, width, height);
+      p.fill(v, 360, 200);
+      p.rect(0,0, p.width, p.height);
     }
   },
   {
     'name':'ciclo',
-    'f':(vals,gb) => {
-      let r = (min(width,height)/2) * 0.8;
-      let c = createVector(width/2, height/2);
+    'f':(p, vals) => {
+      let r = (p.min(p.width,p.height)/2) * 0.8;
+      let c = p.createVector(p.width/2, p.height/2);
 
-      gb.colorMode(RGB);
-      gb.background(50);
-      gb.noFill();
+      p.colorMode(p.RGB);
+      p.background(50);
+      p.noFill();
 
-      gb.strokeWeight(0.8);
-      gb.stroke(255,255,102);
-      gb.line(0,c.y, width,c.y);
-      gb.line(c.x,0, c.x,height);
+      p.strokeWeight(0.8);
+      p.stroke(255,255,102);
+      p.line(0,c.y, p.width,c.y);
+      p.line(c.x,0, c.x,p.height);
 
-      gb.strokeWeight(3);
-      gb.stroke(240);
-      gb.circle(c.x, c.y, r*2);
+      p.strokeWeight(3);
+      p.stroke(240);
+      p.circle(c.x, c.y, r*2);
 
-      let ep = createVector(0,0); // endpoint
+      let ep = p.createVector(0,0); // endpoint
       // hyp
-      ep.x = c.x + r * cos(vals[0]);
-      ep.y = c.y - r * sin(vals[0]);
-      gb.line(c.x, c.y, ep.x, ep.y);
+      ep.x = c.x + r * p.cos(vals[0]);
+      ep.y = c.y - r * p.sin(vals[0]);
+      p.line(c.x, c.y, ep.x, ep.y);
       // sin
-      gb.stroke(80,255,80);
-      gb.line(ep.x,ep.y, ep.x, c.y);
-      gb.line(c.x,ep.y, c.x,c.y);
+      p.stroke(80,255,80);
+      p.line(ep.x,ep.y, ep.x, c.y);
+      p.line(c.x,ep.y, c.x,c.y);
       // cos
-      gb.stroke(80,80,255);
-      gb.line(ep.x,ep.y, c.x, ep.y);
-      gb.line(ep.x,c.y, c.x,c.y);
+      p.stroke(80,80,255);
+      p.line(ep.x,ep.y, c.x, ep.y);
+      p.line(ep.x,c.y, c.x,c.y);
       // tan
-      let tep = createVector(0,0);
-      tep.x = c.x + r/cos(vals[0]);
+      let tep = p.createVector(0,0);
+      tep.x = c.x + r/p.cos(vals[0]);
       tep.y = c.y
-      gb.stroke(255,80,80);
-      gb.line(ep.x,ep.y, tep.x,tep.y);
+      p.stroke(255,80,80);
+      p.line(ep.x,ep.y, tep.x,tep.y);
 
-      //let a = (vals[0] > 0)? vals[0] % TAU : (TAU - vals[0]) % TAU;
-      let x_sign = (cos(vals[0])>=0)? 1 : -1;
+      let x_sign = (p.cos(vals[0])>=0)? 1 : -1;
       let y_sign = 1;
       let tsp_x = c.x + x_sign*r;
       tep.x = tsp_x;
-      tep.y = c.y - x_sign*r*tan(vals[0]);
-      gb.line(tsp_x,c.y, tep.x,tep.y);
+      tep.y = c.y - x_sign*r*p.tan(vals[0]);
+      p.line(tsp_x,c.y, tep.x,tep.y);
     }
   },
   {
     'name' : 'ball',
-    'f': (vals, gb) => {
-      gb.colorMode(RGB);
-      gb.fill(253,102,0);
-      gb.noStroke();
-      let d = min(height,width) * 0.9;
-      gb.background(0,120,255);
-      gb.circle(width/2, height/2, d*vals[1]);
+    'f': (p, vals) => {
+      p.colorMode(p.RGB);
+      p.fill(253,102,0);
+      p.noStroke();
+      let d = p.min(p.height,p.width) * 0.9;
+      p.background(0,120,255);
+      p.circle(p.width/2, p.height/2, d*vals[1]);
     }
   },
   {
     'name': 'ball inv',
-    'f': (vals, gb) => {
-      gb.colorMode(RGB);
-      gb.background(0);
-      gb.noStroke();
-      let d = min(height,width)* 0.9;
+    'f': (p, vals) => {
+      p.colorMode(p.RGB);
+      p.background(0);
+      p.noStroke();
+      let d = p.min(p.height,p.width)* 0.9;
       let y = vals[1];
       if(y>0) {
-        gb.fill(253,102,0);
+        p.fill(253,102,0);
       } else {
-        gb.fill(2,153,255);
+        p.fill(2,153,255);
       }
-      gb.circle(width/2, height/2, d*y);
+      p.circle(p.width/2, p.height/2, d*y);
     },
   },
 ];
-module.exports.demos = demos;
 
 function demoFromName(name) {
   let arr = demos;
@@ -106,4 +104,6 @@ function demoFromName(name) {
   }
   return null;
 }
+
+export { demos, demoFromName };
 

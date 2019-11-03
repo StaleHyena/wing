@@ -1,60 +1,54 @@
-class Graph {
-  static_gb;
-  trace_gb;
-  marks_gb;
-  origin;
-  scale_factor;
-  cur_graph_func;
-  continuity_threshold = 100;
-
-  ranges = {
-    'projection': {
-      'min':{'x':0,'y':0},
-      'max':{'x':0,'y':0},
-      'width':0,
-      'height':0,
-    },
-    'display': {
-      'min':{'x':0,'y':0},
-      'max':{'x':0,'y':0},
-      'width':0,
-      'height':0,
-    },
-    'unit': createVector(0,0),
-  }
-  pallete = {
-    'bg': color(42),
-    'grid': color(166),
-    'trace': color(33, 107, 181),
-    'mark': color(255, 69),
-    'accent_mark': color(230, 75, 75),
-    'axis': color(39, 112, 54),
-    'text': color(200),
-  }
-  style = {
-    'weights': {
-      'grid': 0.5,
-      'axis':3.5,
-      'trace':4,
-      'mark':3,
-    },
-    //'padding': 16,
-    'padding': 12,
-    'text': {
-      'size': 32,
-      'spacing': 40,
-    },
-    'mark_size': 10,
-  }
-
+export default class Graph {
   constructor(w,h) {
-    this.static_gb = createGraphics(w,h);
-    this.trace_gb  = createGraphics(w,h);
-    this.marks_gb  = createGraphics(w,h);
-    this.origin = createVector();
-    this.scale_factor = createVector();
+    this.static_gb = p.createGraphics(w,h);
+    this.trace_gb  = p.createGraphics(w,h);
+    this.marks_gb  = p.createGraphics(w,h);
+    this.origin = p.createVector();
+    this.scale_factor = p.createVector();
     this.cur_graph_func = undefined;
-    this.updateRanges([PI,1, 0,2*PI, -2,2]);
+    this.continuity_threshold = 100;
+
+    this.ranges = {
+      'projection': {
+        'min':{'x':0,'y':0},
+        'max':{'x':0,'y':0},
+        'width':0,
+        'height':0,
+      },
+      'display': {
+        'min':{'x':0,'y':0},
+        'max':{'x':0,'y':0},
+        'width':0,
+        'height':0,
+      },
+      'unit': p.createVector(0,0),
+    }
+    this.pallete = {
+      'bg': p.color(42),
+      'grid': p.color(166),
+      'trace': p.color(33, 107, 181),
+      'mark': p.color(255, 69),
+      'accent_mark': p.color(230, 75, 75),
+      'axis': p.color(39, 112, 54),
+      'text': p.color(200),
+    }
+    this.style = {
+      'weights': {
+        'grid': 0.5,
+        'axis':3.5,
+        'trace':4,
+        'mark':3,
+      },
+      //'padding': 16,
+      'padding': 12,
+      'text': {
+        'size': 32,
+        'spacing': 40,
+      },
+      'mark_size': 10,
+    }
+
+    this.updateRanges([p.PI,1, 0,2*p.PI, -2,2]);
     this.updateGrid();
   }
 
@@ -153,8 +147,8 @@ class Graph {
     dis.height = dis.max.y - dis.min.y;
 
     // Get origin from projection
-    orig.x = map(0, proj.min.x,proj.max.x, dis.min.x,dis.max.x);
-    orig.y = map(0, proj.min.y,proj.max.y, dis.min.y,dis.max.y);
+    orig.x = p.map(0, proj.min.x,proj.max.x, dis.min.x,dis.max.x);
+    orig.y = p.map(0, proj.min.y,proj.max.y, dis.min.y,dis.max.y);
 
     this.scale_factor.x = dis.width/proj.width;
     this.scale_factor.y = dis.height/proj.height;
@@ -162,7 +156,7 @@ class Graph {
 
   drawGraph(graph_func) {
     let t_gb = this.trace_gb;
-    let p   = this.ranges.projection;
+    let proj = this.ranges.projection;
     let dis = this.ranges.display;
     let unit = this.ranges.unit;
     let w = dis.width;
@@ -171,12 +165,12 @@ class Graph {
     this.cur_graph_func = graph_func;
 
     let resolution = 1000;
-    let step = p.width / resolution;
+    let step = proj.width / resolution;
 
     let trace_c = this.pallete.trace;
     let trace_w = this.style.weights.trace;
 
-    let prev = createVector(0,0);
+    let prev = p.createVector(0,0);
 
     let sfactor = this.scale_factor;
 
@@ -186,19 +180,20 @@ class Graph {
     t_gb.translate(orig.x, orig.y);
     t_gb.strokeWeight(trace_w);
     t_gb.stroke(trace_c);
-    let x = p.min.x;
+    let x = proj.min.x;
     let sx = x * sfactor.x;
-    let porig = map(orig.x, dis.min.x, dis.max.x, p.min.x, p.max.x);
+    let porig = this.disToProj(orig.x, 0)[0];
     let inx = x - porig;
     let y = graph_func(inx) * sfactor.y;
     prev.x = sx;
     prev.y = y;
-    for(; x < p.max.x; x+=step) {
+    console.log(`called, ${x}, ${sx}, ${porig}, ${inx}, ${y}`);
+    for(; x < proj.max.x; x+=step) {
       sx = x * sfactor.x;
-      porig = map(orig.x, dis.min.x, dis.max.x, p.min.x, p.max.x);
+      porig = this.disToProj(orig.x, 0)[0];
       inx = x - porig;
       y = graph_func(inx) * sfactor.y;
-      let deltay = abs(y - prev.y);
+      let deltay = p.abs(y - prev.y);
       if(deltay > this.continuity_threshold) {
         t_gb.point(sx,y);
       } else {
@@ -243,33 +238,34 @@ class Graph {
     // txt
     m_gb.translate(x_sel + txt_sp, accentm_y-txt_sp);
     m_gb.textSize(txt_s);
-    m_gb.textAlign(CENTER);
+    m_gb.textAlign(p.CENTER);
     m_gb.fill(txt_c);
-    let roundx = round(px*1000)/1000;
-    let roundy = round(py*1000)/1000;
+    let roundx = p.round(px*1000)/1000;
+    let roundy = p.round(py*1000)/1000;
     m_gb.text('('+roundx+','+roundy+')',0,0);
     m_gb.pop();
   }
 
   disToProj(ix,iy) {
-    let d = this.ranges.display;
-    let p = this.ranges.projection;
-    let x = constrain(ix, d.min.x, d.max.x);
-    let y = constrain(iy, d.min.y, d.max.y);
+    let dis = this.ranges.display;
+    let proj = this.ranges.projection;
+    let x = p.constrain(ix, dis.min.x, dis.max.x);
+    let y = p.constrain(iy, dis.min.y, dis.max.y);
     return [
-      map(x, d.min.x,d.max.x, p.min.x,p.max.x),
-      map(y, d.min.y,d.max.y, p.min.y,p.max.y)
+      p.map(x, dis.min.x,dis.max.x, proj.min.x,proj.max.x),
+      p.map(y, dis.min.y,dis.max.y, proj.min.y,proj.max.y)
     ];
   }
 
   projToDis(ix,iy) {
-    let d = this.ranges.display;
-    let p = this.ranges.projection;
-    let x = constrain(ix, p.min.x, p.max.x);
-    let y = constrain(iy, p.min.y, p.max.y);
+    let dis = this.ranges.display;
+    let proj = this.ranges.projection;
+    let x = p.constrain(ix, proj.min.x, proj.max.x);
+    let y = p.constrain(iy, proj.min.y, proj.max.y);
     return [
-      map(x, p.min.x,p.max.x, d.min.x,d.max.x),
-      map(y, p.min.y,p.max.y, d.min.y,d.max.y)
+      p.map(x, proj.min.x,proj.max.x, dis.min.x,dis.max.x),
+      p.map(y, proj.min.y,proj.max.y, dis.min.y,dis.max.y)
     ];
   }
 }
+

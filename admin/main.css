@@ -35,3 +35,10 @@ body {
 #ui-bar > div > h2 {
   margin: 2.5px 0;
 }
+
+#range-menu {
+  background: #7896cf;
+  border: 0px solid transparent;
+  border-radius: 10px;
+  padding: 8px 18px;
+}

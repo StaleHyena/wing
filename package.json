@@ -5,13 +5,20 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "node server.js",
+    "build": "webpack",
+    "bdev": "webpack --mode=development"
   },
-  "author": "RedKugelblitz",
+  "author": "StaleHyena",
   "license": "ISC",
   "dependencies": {
     "express": "^4.17.1",
+    "mathjs": "^6.2.3",
     "p5": "^0.10.2",
     "socket.io": "^2.3.0"
+  },
+  "devDependencies": {
+    "webpack": "^4.41.2",
+    "webpack-cli": "^3.3.10"
   }
 }
