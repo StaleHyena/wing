@@ -1,6 +1,8 @@
 import { demos, demoFromName } from '../client/demos.js';
 import { graph_funcs, graphFromName } from './demos.js';
+import { create, all } from 'mathjs/number'
 
+const math = create(all);
 class UserInterface {
   constructor() {
     this.ui_div;
@@ -9,6 +11,7 @@ class UserInterface {
     this.demo_sel;
     this.clientCount_p;
     this.step_slider;
+    this.expr_field;
     this.callbacks = new Map();
   }
 
@@ -20,6 +23,8 @@ class UserInterface {
     this.clientCount_p  = p.select('#client-counter');
     this.step_slider    = p.createSlider(0.0, 1.0, 0.5, 0.001);
     this.step_slider.parent(p.select('#step-slider'));
+    this.expr_field     = p.createInput('sin(x^2)');
+    this.expr_field.parent(p.select('#range-menu'));
     this.callbacks = new Map();
     this.populateMenus();
 
@@ -27,6 +32,7 @@ class UserInterface {
     this.graph_sel.changed(newGraphIn);
     this.demo_sel.changed(newDemoIn);
     this.step_slider.changed(newStepIn);
+    this.expr_field.input(newExpr);
   }
 
   ready() {
@@ -69,6 +75,8 @@ export function newGraphIn() {
     g = graph_funcs[0];
   }
   console.log('New graph selected: ' + g.name);
+  ui.expr_field.value(g.e);
+  newExpr();
   let c = ui.callbacks.get('graph');
   if(c) { c(g); }
 }
@@ -94,5 +102,17 @@ export function newStepIn() {
 export function playpause() {
   let c = ui.callbacks.get('play/pause');
   if(c) { c(); }
+}
+
+export function newExpr() {
+  let e = ui.expr_field.value();
+  try {
+    let r = math.compile(e);
+    let c = ui.callbacks.get('expr');
+    if(c) { c(r); }
+  } catch(err) {
+    console.error(err);
+    return undefined;
+  }
 }
 

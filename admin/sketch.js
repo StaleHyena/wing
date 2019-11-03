@@ -2,13 +2,15 @@ import p5 from "p5/lib/p5.min.js";
 import Graph from "./graph.js";
 import ui from "./ui.js";
 import Net from "./net.js";
+import { create, all } from 'mathjs/number'
 
+const math = create(all);
 let canvas;
 let net;
 let num_clients;
 
-let cur_graph;
 let cur_demo;
+let cur_expr;
 
 let graph;
 let scrubbing;
@@ -43,7 +45,8 @@ const sketch = (p) => {
     scrub_pos = graph.ranges.display.min.x;
     step_max = p.width/40;
 
-    function drawGraph(g) { cur_graph = g; graph.drawGraph(g.f); }
+    cur_expr = undefined;
+
     function updateDemo(d) { cur_demo = d; net.emitData('demo', d.name); }
     function updateStep(v) {
       scrub_step = p.map(p.pow(v,3), 0.0,1.0, 0.0,step_max);
@@ -52,12 +55,16 @@ const sketch = (p) => {
       scrubbing = !scrubbing;
       mouseGracePeriod = 20;
     }
+    function expr(e) {
+      cur_expr = e;
+      drawGraph(cur_expr);
+    }
 
     ui.init();
-    ui.addCallback('graph', drawGraph);
     ui.addCallback('demo', updateDemo);
     ui.addCallback('step', updateStep);
     ui.addCallback('play/pause', playpause);
+    ui.addCallback('expr', expr);
 
     net = new Net(
       function onConnect() {
@@ -71,9 +78,9 @@ const sketch = (p) => {
   }
 
   p.draw = function() {
-    if(cur_graph) {
+    if(cur_expr) {
       if(p.mouseIsPressed && p.mouseButton == p.RIGHT) {
-        graph.drawGraph(cur_graph.f);
+        graph.drawGraph((x)=>{return cur_expr.evaluate({'x':x})});
       }
 
       let selx = getX();
@@ -81,7 +88,7 @@ const sketch = (p) => {
       if(selx) {
         graph.drawSelection(selx);
         let x = graph.disToProj(selx,0)[0];
-        let y = cur_graph.f(x);
+        let y = cur_expr.evaluate({'x':x});
         net.emitData('vals', [x,y]);
       }
 
@@ -104,6 +111,16 @@ const sketch = (p) => {
       p.text("Sem gráfico!", p.width/2, p.height/2);
     }
   }
+}
+
+function drawGraph(e) {
+  graph.drawGraph((x) => {
+    try {
+      return e.evaluate({'x':x})
+    } catch (err) {
+      return 0;
+    }
+  });
 }
 
 function getX() {

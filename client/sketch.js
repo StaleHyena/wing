@@ -12,10 +12,10 @@ const sketch = (p) => {
     demo = demos[0];
     vals = [0,0]
     setupNet();
+    p.background(0);
   }
 
   p.draw = function() {
-    p.background(0);
     if(demo != null) {
       let f = demo.f;
       f(p, vals);

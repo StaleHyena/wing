@@ -18,6 +18,7 @@ let admin_socket = -1;
 
 function setupNet() {
   io.sockets.on('connection', (socket) => {
+    emitClientsAdmin();
     socket.emit('vals', vals);
     socket.emit('demo', demo);
     console.log('Socket ' + socket.id + ' has connected.');
@@ -49,6 +50,7 @@ function setupNet() {
       }
       s += ' has disconnected -- ' + reason;
       console.log(s);
+      emitClientsAdmin();
     });
   });
 }
@@ -58,7 +60,7 @@ setupNet();
 let statSymbols = ['|','/','-','\\'];
 let statCounter = 0;
 
-printVals = function() {
+function printVals() {
   let x = Math.round(vals[0]*1000)/1000;
   let y = Math.round(vals[1]*1000)/1000;
   //let x = vals[0];
@@ -75,6 +77,11 @@ printVals = function() {
   }
 }
 
+function emitClientsAdmin() {
+  if(admin_socket != -1) {
+    io.to(admin_socket).emit('clients', io.engine.clientsCount - 1);
+  }
+}
+
 setInterval(printVals, 500);
-setInterval(()=>{io.emit('clients', io.engine.clientsCount);},500);
 

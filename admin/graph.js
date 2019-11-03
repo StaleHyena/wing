@@ -6,7 +6,7 @@ export default class Graph {
     this.origin = p.createVector();
     this.scale_factor = p.createVector();
     this.cur_graph_func = undefined;
-    this.continuity_threshold = 100;
+    this.continuity_threshold = 1000;
 
     this.ranges = {
       'projection': {
@@ -187,7 +187,6 @@ export default class Graph {
     let y = graph_func(inx) * sfactor.y;
     prev.x = sx;
     prev.y = y;
-    console.log(`called, ${x}, ${sx}, ${porig}, ${inx}, ${y}`);
     for(; x < proj.max.x; x+=step) {
       sx = x * sfactor.x;
       porig = this.disToProj(orig.x, 0)[0];
