@@ -1,5 +1,7 @@
+const path = require('path');
 const express = require('express');
 const app = express();
+const favicon = require('serve-favicon');
 const socket = require('socket.io');
 const process = require('process');
 const server = app.listen(8080);
@@ -8,6 +10,7 @@ const io = socket(server);
 app.use('/admin', express.static('admin'));
 app.use('/libs', express.static('libs'));
 app.use('/client', express.static('client'));
+app.use(favicon(path.join(__dirname, 'assets', 'favicon.ico')));
 app.all('/', (req, res) => {
   res.redirect('/client');
 });
