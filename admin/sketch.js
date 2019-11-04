@@ -41,29 +41,10 @@ const sketch = (p) => {
     mousePressed = false;
     mouseGracePeriod = 0;
     scrubbing = false;
-    scrub_pos = graph.ranges.display.min.x;
+    scrub_pos = graph.displayOrigin.x;
     step_max = p.width/40;
 
     cur_expr = undefined;
-
-    function updateDemo(d) { cur_demo = d; net.emitData('demo', d.name); }
-    function updateStep(v) {
-      scrub_step = p.map(p.pow(v,3), 0.0,1.0, 0.0,step_max);
-    }
-    function playpause() {
-      scrubbing = !scrubbing;
-      mouseGracePeriod = 20;
-    }
-    function expr(e) {
-      cur_expr = e;
-      graph.bindFunc((x) => {
-        try {
-          return e.evaluate({'x':x});
-        } catch (err) {
-          return 0;
-        }
-      });
-    }
 
     ui.init();
     ui.addCallback('demo', updateDemo);
@@ -111,15 +92,41 @@ const sketch = (p) => {
       p.text("Sem gráfico!", p.width/2, p.height/2);
     }
   }
+
+  p.keyPressed = function() {
+    if(p.keyCode == 32) { //spacebar
+      playpause();
+    }
+  }
 }
 
 function getX() {
   if(scrubbing) {
     return scrub_pos;
   } else if (mousePressed) {
+    scrub_pos = p.mouseX;
     return p.mouseX;
   }
   return undefined;
+}
+
+function updateDemo(d) { cur_demo = d; net.emitData('demo', d.name); }
+function updateStep(v) {
+  scrub_step = p.map(p.pow(v,3), 0.0,1.0, 0.0,step_max);
+}
+function playpause() {
+  scrubbing = !scrubbing;
+  mouseGracePeriod = 20;
+}
+function expr(e) {
+  cur_expr = e;
+  graph.bindFunc((x) => {
+    try {
+      return e.evaluate({'x':x});
+    } catch (err) {
+      return 0;
+    }
+  });
 }
 
 function onMousePressed() {
