@@ -33,7 +33,7 @@ const sketch = (p) => {
     window.p = p; // Make it accessible globally
 
     graph = new Graph(p.width,p.height);
-    graph.updateRanges([p.PI/2,1, -p.PI,5*p.PI, -1.2,1.2]);
+    graph.updateRanges([p.PI/2,1, -p.PI,5*p.PI, -4,4]);
     graph.updateGrid();
 
     num_clients = 0;

@@ -8,7 +8,7 @@ export default class Graph {
     this.scale_factor = p.createVector();
     this.graph_f = (x) => { return 0; };
     this.selectedX = 0;
-    this.continuity_threshold = 0.5;
+    this.continuity_threshold = 10000;
 
     this.ranges = {
       'projection': {
