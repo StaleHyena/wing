@@ -1,7 +1,8 @@
 {
-  "name": "net_test_server",
-  "version": "1.0.0",
-  "description": "general testing server",
+  "name": "placeholder",
+  "description": "multiclient interactive visualizer",
+  "private": true,
+  "version": "0.1.0",
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
