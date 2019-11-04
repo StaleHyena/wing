@@ -12,7 +12,9 @@ class UserInterface {
     this.clientCount_p;
     this.step_slider;
     this.expr_field;
-    this.callbacks = new Map();
+    this.graphId_sel;
+    this.callbacks;
+    this.graphId;
   }
 
   init() {
@@ -25,7 +27,11 @@ class UserInterface {
     this.step_slider.parent(p.select('#step-slider'));
     this.expr_field     = p.createInput('sin(x^2)');
     this.expr_field.parent(p.select('#range-menu'));
+    this.graphId_sel = p.select('#id-menu');
+    this.graphId_sel.parent(p.select('#range-menu'));
     this.callbacks = new Map();
+
+    this.graphId = 0;
     this.populateMenus();
 
     this.playpause_btn.mousePressed(playpause);
@@ -33,6 +39,7 @@ class UserInterface {
     this.demo_sel.changed(newDemoIn);
     this.step_slider.changed(newStepIn);
     this.expr_field.input(newExpr);
+    this.graphId_sel.changed(newGraphId);
   }
 
   ready() {
@@ -48,6 +55,8 @@ class UserInterface {
     for(i=0; i<l; i++) { this.graph_sel.option(graph_presets[i].name); }
     l = demos.length;
     for(i=0; i<l; i++) { this.demo_sel.option(demos[i].name); }
+    this.graphId_sel.option(0);
+    this.graphId_sel.option(1);
   }
 
   updateClientCount(c) {
@@ -109,10 +118,14 @@ export function newExpr() {
   try {
     let r = math.compile(e);
     let c = ui.callbacks.get('expr');
-    if(c) { c(r, 0); }
+    if(c) { c(r, ui.graphId); }
   } catch(err) {
     console.error(err);
     return undefined;
   }
+}
+
+export function newGraphId() {
+  ui.graphId = ui.graphId_sel.value();
 }
 

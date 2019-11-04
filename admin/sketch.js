@@ -46,7 +46,7 @@ const sketch = (p) => {
       {
         id: 1,
         color: p.color(255,10,50),
-        func: (x) => { return p.tan(x); },
+        func: (x) => { return 100; }, // Out of sight out of mind
       }
     );
 
