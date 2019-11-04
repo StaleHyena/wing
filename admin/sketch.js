@@ -35,6 +35,20 @@ const sketch = (p) => {
     graph = new Graph(p.width,p.height);
     graph.updateRanges([p.PI/2,1, -p.PI,5*p.PI, -4,4]);
     graph.updateGrid();
+    graph.addGraph(
+      {
+        id: 0,
+        color: graph.pallete.trace,
+        func:(x) => { return 0; },
+      }
+    );
+    graph.addGraph(
+      {
+        id: 1,
+        color: p.color(255,10,50),
+        func: (x) => { return p.tan(x); },
+      }
+    );
 
     num_clients = 0;
 
@@ -118,15 +132,19 @@ function playpause() {
   scrubbing = !scrubbing;
   mouseGracePeriod = 20;
 }
-function expr(e) {
+function expr(e, id) {
   cur_expr = e;
-  graph.bindFunc((x) => {
-    try {
-      return e.evaluate({'x':x});
-    } catch (err) {
-      return 0;
-    }
-  });
+  let g = graph.getGraphById(id);
+  if(g) {
+    g.func = (x) => {
+      try {
+        return e.evaluate({'x':x});
+      } catch (err) {
+        return 0;
+      }
+    };
+    graph.drawGraphs();
+  }
 }
 
 function onMousePressed() {

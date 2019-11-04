@@ -109,7 +109,7 @@ export function newExpr() {
   try {
     let r = math.compile(e);
     let c = ui.callbacks.get('expr');
-    if(c) { c(r); }
+    if(c) { c(r, 0); }
   } catch(err) {
     console.error(err);
     return undefined;

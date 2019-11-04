@@ -6,7 +6,6 @@ export default class Graph {
     this.origin = p.createVector();
     this.displayOrigin = p.createVector();
     this.scale_factor = p.createVector();
-    this.graph_f = (x) => { return 0; };
     this.selectedX = 0;
     this.continuity_threshold = 10000;
 
@@ -49,6 +48,8 @@ export default class Graph {
       },
       'mark_size': 10,
     }
+    
+    this.graphs = [];
 
     this.updateRanges([1,1, -1,1, -1,1]);
     this.updateGrid();
@@ -142,11 +143,8 @@ export default class Graph {
       rd.height = rd.max.y - rd.min.y;
     }
 
-    console.log(r);
     this.origin = p.createVector(0,0);
-    console.log(`origin ${this.origin}`);
     this.displayOrigin = this.projToDis(this.origin);
-    console.log(`displayOrigin ${this.displayOrigin}`);
 
     this.scale_factor = p.createVector(
       r.display.width /r.projection.width,
@@ -154,10 +152,47 @@ export default class Graph {
     );
   }
 
-  bindFunc(graph_function) {
-    this.graph_f = graph_function;
-    this.drawGraph();
+  addGraph(graph) {
+    /*
+    let id;
+    const len = this.graphs.length;
+    if(len > 0) {
+      let tally = [];
+      this.graphs.forEach((g) => {
+        tally.push(g.id);
+      });
+      tally.sort();
+      for(let i = 0; i < tally.length; i++) {
+
+      }
+    } else {
+      id = 0;
+    }
+    graph.id = id + 1;
+    */
+    this.graphs.push(graph);
+    this.drawGraphs();
     this.drawSelection();
+  }
+
+  getGraphById(id) {
+    for(let i = 0; i < this.graphs.length; i++) {
+      let g = this.graphs[i];
+      if(g.id == id) {
+        return g;
+      }
+    }
+    return undefined;
+  }
+
+  remGraph(id) {
+    for(let i = 0; i < this.graphs.length; i++) {
+      let g = this.graphs[i];
+      if(g.id == id) {
+        this.graphs.splice(i, 1);
+        drawGraphs();
+      }
+    }
   }
 
   selectDisp(x) {
@@ -166,11 +201,22 @@ export default class Graph {
   }
 
   getSelection() {
-    return p.createVector(this.selectedX, this.graph_f(this.selectedX));
+    const g = this.getGraphById(0);
+    if(g) {
+      return p.createVector(this.selectedX, g.func(this.selectedX));
+    } else {
+      return 0;
+    }
   }
 
-  drawGraph() {
-    if(!this.graph_f){ return; }
+  drawGraphs() {
+    this.trace_gb.clear();
+    this.graphs.forEach((g) => {this.drawGraph(g);});
+    this.drawSelection();
+  }
+
+  drawGraph(graph) {
+    if(!graph){ return; }
     let t_gb = this.trace_gb;
     const r = this.ranges;
     const resolution = 1000;
@@ -182,15 +228,14 @@ export default class Graph {
     let x = r.projection.min.x;
     let point;
     let scaled_point;
-    let prev = getPoint(x, this.graph_f);
+    let prev = getPoint(x, graph.func);
     let scaled_prev;
 
-    t_gb.clear();
     t_gb.strokeWeight(this.style.weights.trace);
-    t_gb.stroke(this.pallete.trace);
+    t_gb.stroke(graph.color);
     let mX = r.projection.max.x;
     for(; x < mX; x += step) {
-      point = getPoint(x, this.graph_f);
+      point = getPoint(x, graph.func);
       let deltay = p.abs(point.y - prev.y);
       let oob = checkBounds(
         point,
@@ -215,17 +260,19 @@ export default class Graph {
   drawSelection() {
     const r = this.ranges;
     const selx = this.selectedX;
+    const g = this.getGraphById(0);
     const invalid = 
-      selx == undefined || !this.graph_f ||
+      selx == undefined || !g ||
       selx > r.projection.max.x || selx < r.projection.min.x;
     if(invalid){
       console.log('invalid selection');
       return;
     }
+    const graph_f = g.func;
     const dispOrigin = this.displayOrigin;
 
     let m_gb = this.marks_gb;
-    let point = this.projToDis(p.createVector(selx, this.graph_f(selx)));
+    let point = this.projToDis(p.createVector(selx, graph_f(selx)));
 
     m_gb.push();
     m_gb.clear();
@@ -245,7 +292,7 @@ export default class Graph {
     m_gb.textAlign(p.CENTER);
     m_gb.fill(this.pallete.text);
     let roundx = p.round(selx*1000)/1000;
-    let roundy = p.round(this.graph_f(selx)*1000)/1000;
+    let roundy = p.round(graph_f(selx)*1000)/1000;
     m_gb.text('('+roundx+','+roundy+')',0,0);
     m_gb.pop();
   }
