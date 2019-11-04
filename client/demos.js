@@ -22,7 +22,7 @@ let demos = [
   {
     'name':'ciclo',
     'f':(p, vals) => {
-      let r = (p.min(p.width,p.height)/2) * 0.8;
+      let r = (p.min(p.width,p.height)/2) * 0.5;
       let c = p.createVector(p.width/2, p.height/2);
 
       p.colorMode(p.RGB);
@@ -33,6 +33,17 @@ let demos = [
       p.stroke(255,255,102);
       p.line(0,c.y, p.width,c.y);
       p.line(c.x,0, c.x,p.height);
+      p.stroke(255,255,102,128);
+      p.line(0,c.y+r, p.width,c.y+r);
+      p.line(0,c.y-r, p.width,c.y-r);
+      p.line(c.x+r,0, c.x+r,p.height);
+      p.line(c.x-r,0, c.x-r,p.height);
+      p.stroke(255,255,102,64);
+      p.line(0,c.y+2*r, p.width,c.y+2*r);
+      p.line(0,c.y-2*r, p.width,c.y-2*r);
+      p.line(c.x+2*r,0, c.x+2*r,p.height);
+      p.line(c.x-2*r,0, c.x-2*r,p.height);
+
 
       p.strokeWeight(3);
       p.stroke(240);
@@ -44,18 +55,18 @@ let demos = [
       ep.y = c.y - r * p.sin(vals[0]);
       p.line(c.x, c.y, ep.x, ep.y);
       // sin
-      p.stroke(80,255,80);
+      p.stroke(33, 107, 181),
       p.line(ep.x,ep.y, ep.x, c.y);
       p.line(c.x,ep.y, c.x,c.y);
       // cos
-      p.stroke(80,80,255);
+      p.stroke(255,10,50),
       p.line(ep.x,ep.y, c.x, ep.y);
       p.line(ep.x,c.y, c.x,c.y);
       // tan
       let tep = p.createVector(0,0);
       tep.x = c.x + r/p.cos(vals[0]);
       tep.y = c.y
-      p.stroke(255,80,80);
+      p.stroke(40,255,40);
       p.line(ep.x,ep.y, tep.x,tep.y);
 
       let x_sign = (p.cos(vals[0])>=0)? 1 : -1;

@@ -49,6 +49,13 @@ const sketch = (p) => {
         func: (x) => { return 100; }, // Out of sight out of mind
       }
     );
+    graph.addGraph(
+      {
+        id: 2,
+        color: p.color(40,255,40),
+        func: (x) => { return 100; },
+      }
+    );
 
     num_clients = 0;
 

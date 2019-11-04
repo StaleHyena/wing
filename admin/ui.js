@@ -57,6 +57,7 @@ class UserInterface {
     for(i=0; i<l; i++) { this.demo_sel.option(demos[i].name); }
     this.graphId_sel.option(0);
     this.graphId_sel.option(1);
+    this.graphId_sel.option(2);
   }
 
   updateClientCount(c) {
