@@ -23,10 +23,10 @@ $ npm install
 ```
 ## Running the server
 Having finished the installation process sucessfully, you should be able to start the server by running:
-``
-$ node server.js
-``
-while in the Wing folder.<br/>
+```bash
+$ npm run start
+```
+While in the Wing folder.<br/>
 That will attempt to start the server on the port specified by the ``config.json`` file (80 by default).<br/>
 If everything works as intended, you should see something similar to this:
 <img src="https://github.com/StaleHyena/wing/blob/readme-dev/assets/server_start.gif" width="150" height="23"><br/>
