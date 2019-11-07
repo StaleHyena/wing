@@ -1,10 +1,12 @@
 const path = require('path');
+const fs = require('fs');
+const conf = JSON.parse(fs.readFileSync('config.json', 'utf8'));
 const express = require('express');
 const app = express();
 const favicon = require('serve-favicon');
 const socket = require('socket.io');
 const process = require('process');
-const server = app.listen(8080);
+const server = app.listen(conf.port);
 const io = socket(server);
 
 app.use('/admin', express.static('admin'));
