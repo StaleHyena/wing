@@ -20,6 +20,7 @@ In order to install Wing on your machine, run the following commands:
 $ git clone https://github.com/StaleHyena/wing.git
 $ cd wing/
 $ npm install
+$ npm run build
 ```
 ## Running the server
 Having finished the installation process sucessfully, you should be able to start the server by running:
@@ -57,4 +58,4 @@ Everything that appears on your screen is defined by the function and the demo t
 #### Wow! Really cool name, whose idea was it?
 * It was a collective idea that we absolutely stole from wine.
 #### Why is this FAQ so short?
-* Because we've had very few users and therefore very few questions so far.
+* Because so far we've had very few users and therefore very few questions.
