@@ -1,9 +1,13 @@
 import socketio from "socket.io-client";
 
-export default class Network {
+class Network {
   constructor(onConnect = undefined, onClient = undefined) {
-    this.socket = socketio();
+    this.socket = undefined;
     this.netError = false;
+  }
+
+  init(onConnect = undefined, onClient = undefined) {
+    this.socket = socketio();
     this.socket.on('connect', () => {
       this.socket.on('clients', (c) => {
         if(onClient) {
@@ -29,4 +33,7 @@ export default class Network {
     }
   }
 }
+
+let net = new Network();
+export default net;
 

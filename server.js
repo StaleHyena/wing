@@ -1,11 +1,12 @@
 const path = require('path');
 const fs = require('fs');
-const conf = JSON.parse(fs.readFileSync('config.json', 'utf8'));
 const express = require('express');
 const app = express();
 const favicon = require('serve-favicon');
 const socket = require('socket.io');
 const process = require('process');
+
+const conf = fetchConfig();
 const server = app.listen(conf.port);
 const io = socket(server);
 
@@ -90,3 +91,17 @@ function emitClientsAdmin() {
 
 setInterval(printVals, 500);
 
+function fetchConfig() {
+  const filename = "config.json";
+  const fallback = "default-config.json";
+  if(fs.existsSync(filename)) {
+    return JSON.parse(fs.readFileSync(filename, 'utf8'));
+  } else {
+    console.log(
+      "\"" + filename + "\"" + 
+      " not found, using \"" + fallback + "\"" +
+      " instead."
+    );
+    return JSON.parse(fs.readFileSync(fallback, 'utf8'));
+  }
+}

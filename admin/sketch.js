@@ -1,12 +1,11 @@
 import p5 from "p5/lib/p5.min.js";
 import Graph from "./graph.js";
 import ui from "./ui.js";
-import Net from "./net.js";
+import net from "./net.js";
 import { create, all } from 'mathjs/number'
 
 const math = create(all);
 let canvas;
-let net;
 let num_clients;
 let aspect_ratio;
 
@@ -85,7 +84,7 @@ const sketch = (p) => {
     ui.addCallback('play/pause', playpause);
     ui.addCallback('expr', expr);
 
-    net = new Net(
+    net.init(
       function onConnect() {
         ui.ready();
       },
