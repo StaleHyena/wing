@@ -51,7 +51,11 @@ export default class Graph {
     
     this.graphs = [];
 
-    this.updateRanges([1,1, -1,1, -1,1]);
+    this.updateRanges({
+      unit: { x:1,y:1 },
+      min:  { x:1,y:1 },
+      max:  { x:1,y:1 },
+    });
     this.updateGrid();
   }
 
@@ -120,16 +124,18 @@ export default class Graph {
     let h = s_gb.height;
     let r = this.ranges;
 
-    r.unit.x = vals[0];
-    r.unit.y = vals[1];
+    r.unit.x = vals.unit.x;
+    r.unit.y = vals.unit.y;
     //console.log('unit = '+unit.toString());
 
     {
+      // Y inverted to make graph grow upwards
+      // This hack has bitten me more than once
       let rp = r.projection;
-      rp.min.x  = vals[2];
-      rp.max.x  = vals[3];
-      rp.min.y  = vals[5];
-      rp.max.y  = vals[4];
+      rp.min.x  = vals.min.x;
+      rp.max.x  = vals.max.x;
+      rp.min.y  = vals.max.y;
+      rp.max.y  = vals.min.y;
       rp.width  = rp.max.x - rp.min.x;
       rp.height = rp.max.y - rp.min.y;
     } {

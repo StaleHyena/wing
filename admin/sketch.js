@@ -8,6 +8,7 @@ const math = create(all);
 let canvas;
 let net;
 let num_clients;
+let aspect_ratio;
 
 let cur_demo;
 let cur_expr;
@@ -18,7 +19,14 @@ let scrub_pos;
 let scrub_step;
 let step_max;
 
-let mousePressed;
+let pan;
+let panning;
+let ranges;
+let p_ranges;
+let dirtyRanges;
+let start_pointerPos;
+
+let leftMousePressed;
 let mouseGracePeriod;
 
 const sketch = (p) => {
@@ -29,11 +37,29 @@ const sketch = (p) => {
     canvas.parent(div);
     canvas.mousePressed(onMousePressed);
     canvas.mouseReleased(onMouseReleased);
+    canvas.mouseWheel(onMouseWheel);
+    aspect_ratio = p.width/p.height;
 
     window.p = p; // Make it accessible globally
 
     graph = new Graph(p.width,p.height);
-    graph.updateRanges([p.PI/2,1, -p.PI,5*p.PI, -4,4]);
+    ranges = {
+      unit: {
+        x: p.PI/2,
+        y: 1,
+      },
+      min: {
+        x: -p.PI,
+        y: -4,
+      },
+      max: {
+        x: 5*p.PI,
+        y: 4,
+      }
+    };
+    panning = false;
+    dirtyRanges = false;
+    graph.updateRanges(ranges);
     graph.updateGrid();
     graph.addGraph(
       {
@@ -42,17 +68,10 @@ const sketch = (p) => {
         func:(x) => { return 0; },
       }
     );
-    graph.addGraph(
-      {
-        id: 1,
-        color: p.color(255,10,50),
-        func: (x) => { return p.tan(x); },
-      }
-    );
 
     num_clients = 0;
 
-    mousePressed = false;
+    leftMousePressed = false;
     mouseGracePeriod = 0;
     scrubbing = false;
     scrub_pos = graph.displayOrigin.x;
@@ -93,6 +112,15 @@ const sketch = (p) => {
           scrub_pos = graph.ranges.display.min.x;
         }
       }
+      if(panning) {
+        panGraph(p.mouseX, p.mouseY);
+      }
+      if(dirtyRanges) {
+        graph.updateRanges(ranges);
+        graph.updateGrid();
+        graph.drawGraphs();
+        dirtyRanges = false;
+      }
       else if(mouseGracePeriod > 0) {
         mouseGracePeriod -= 1;
       }
@@ -117,11 +145,34 @@ const sketch = (p) => {
 function getX() {
   if(scrubbing) {
     return scrub_pos;
-  } else if (mousePressed) {
+  } else if (leftMousePressed) {
     scrub_pos = p.mouseX;
     return p.mouseX;
   }
   return undefined;
+}
+
+function panGraph(x,y) {
+  const dx = (x - start_pointerPos.x)/50;
+  const dy = (y - start_pointerPos.y)/50;
+  if(dx || dy) {
+    ranges.min.x = p_ranges.min.x - dx;
+    ranges.max.x = p_ranges.max.x - dx;
+    ranges.min.y = p_ranges.min.y + dy;
+    ranges.max.y = p_ranges.max.y + dy;
+    dirtyRanges = true;
+  }
+}
+
+function zoomGraph(z) {
+  if(z) {
+    const ratio = graph.ranges.projection.width/graph.ranges.projection.height;
+    ranges.min.x = ranges.min.x - z;
+    ranges.max.x = ranges.max.x + z;
+    ranges.min.y = ranges.min.y + z/ratio;
+    ranges.max.y = ranges.max.y - z/ratio;
+    dirtyRanges = true;
+  }
 }
 
 function updateDemo(d) { cur_demo = d; net.emitData('demo', d.name); }
@@ -150,14 +201,43 @@ function expr(e, id) {
 function onMousePressed() {
   let t = mouseGracePeriod == 0 && p.mouseIsPressed;
   if(t) {
-    mousePressed = true;
+    if(p.mouseButton == p.LEFT) {
+      leftMousePressed = true;
+    } else if(p.mouseButton == p.CENTER) {
+      if(!panning) {
+        start_pointerPos = p.createVector(p.mouseX, p.mouseY);
+        p_ranges = {
+          unit: {
+            x:ranges.unit.x,
+            y:ranges.unit.y,
+          },
+          min: {
+            x:ranges.min.x,
+            y:ranges.min.y,
+          },
+          max: {
+            x:ranges.max.x,
+            y:ranges.max.y,
+          },
+        };
+        panning = true;
+        console.log('init', p_ranges, start_pointerPos);
+      }
+    }
   } else {
-    mousePressed = false;
+    leftMousePressed = false;
   }
 }
 
 function onMouseReleased() {
-  mousePressed = false;
+  leftMousePressed = false;
+  panning = false;
+}
+
+function onMouseWheel(ev) {
+  if(ev.deltaY) {
+    zoomGraph(ev.deltaY*0.1);
+  }
 }
 
 new p5(sketch);
