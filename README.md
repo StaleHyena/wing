@@ -57,4 +57,4 @@ Everything that appears on your screen is defined by the function and the demo t
 #### Wow! Really cool name, whose idea was it?
 * It was a collective idea that we absolutely stole from wine.
 #### Why is this FAQ so short?
-* Because we've had very few users and therfore very few questions so far.
+* Because we've had very few users and therefore very few questions so far.
