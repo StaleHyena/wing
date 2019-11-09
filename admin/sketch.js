@@ -1,4 +1,4 @@
-import p5 from "p5/lib/p5.min.js";
+import p5 from "p5";
 import Graph from "./graph.js";
 import ui from "./ui.js";
 import net from "./net.js";
@@ -87,10 +87,14 @@ const sketch = (p) => {
     net.init(
       function onConnect() {
         ui.ready();
+        ui.updateStatus("Conectado", "#34eb77");
       },
       function onClient(c) {
         num_clients = c;
         ui.updateClientCount(num_clients);
+      },
+      function onDeny() {
+        ui.updateStatus("Pedido de admin recusado", "#ff0000");
       }
     );
   }

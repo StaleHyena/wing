@@ -1,4 +1,4 @@
-import p5 from "p5/lib/p5.min.js";
+import p5 from "p5";
 import socketio from "socket.io-client";
 import { demos, demoFromName } from './demos.js'
 

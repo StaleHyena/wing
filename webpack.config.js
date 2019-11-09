@@ -13,5 +13,8 @@ module.exports = {
     splitChunks: {
       chunks: 'all',
     }
+  },
+  externals: {
+    p5: 'p5',
   }
 };

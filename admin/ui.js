@@ -10,6 +10,7 @@ class UserInterface {
     this.graph_sel;
     this.demo_sel;
     this.clientCount_p;
+    this.status_p;
     this.step_slider;
     this.expr_field;
     this.callbacks = new Map();
@@ -21,6 +22,7 @@ class UserInterface {
     this.graph_sel      = p.select('#graph-menu');
     this.demo_sel       = p.select('#demo-menu');
     this.clientCount_p  = p.select('#client-counter');
+    this.status_p       = p.select('#status-txt');
     this.step_slider    = p.createSlider(0.0, 1.0, 0.5, 0.001);
     this.step_slider.parent(p.select('#step-slider'));
     this.expr_field     = p.createInput('sin(x^2)');
@@ -53,13 +55,19 @@ class UserInterface {
   updateClientCount(c) {
     if(c == 0) {
       this.clientCount_p.elt.innerText = "Nenhum cliente conectado";
+    } else {
+      let suff = (c > 1)? " clientes conectados" : " cliente conectado";
+      this.clientCount_p.elt.innerText = String(c) + suff;
     }
-    let suff = (c > 1)? " clientes conectados" : " cliente conectado";
-    this.clientCount_p.elt.innerText = String(c) + suff;
   }
 
   addCallback(name, f) {
     this.callbacks.set(name, f);
+  }
+
+  updateStatus(txt, clr) {
+    this.status_p.elt.innerText = txt;
+    this.status_p.style('color', clr);
   }
 }
 

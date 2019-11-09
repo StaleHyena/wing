@@ -33,6 +33,7 @@ function setupNet() {
       if(admin_socket == -1) {
         admin_socket = socket.id;
         console.log(socket.id + ' is the new admin.');
+        emitClientsAdmin();
 
         socket.on('vals', (v) => {
           vals = v;
@@ -44,6 +45,7 @@ function setupNet() {
         });
       } else {
         console.log(socket.id + ' failed to become admin.');
+        socket.emit('denied');
         socket.disconnect();
       }
     });

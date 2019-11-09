@@ -6,7 +6,7 @@ class Network {
     this.netError = false;
   }
 
-  init(onConnect = undefined, onClient = undefined) {
+  init(onConnect = undefined, onClient = undefined, onDeny = undefined) {
     this.socket = socketio();
     this.socket.on('connect', () => {
       this.socket.on('clients', (c) => {
@@ -16,6 +16,11 @@ class Network {
       });
       this.socket.on('disconnect', (reason) => {
         console.error('Disconnected from server -- ' + reason);
+      });
+      this.socket.on('denied', () => {
+        if(onDeny) {
+          onDeny();
+        }
       });
       this.emitData('admin');
       if(onConnect){
