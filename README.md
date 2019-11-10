@@ -12,9 +12,10 @@ In practice, the admin is the teacher and the clients are the students.
 
 ## Installation
 ### Prerequisites
+* Being on Linux(or WSL)
 * Node.js
 * Npm (node package manager)
-### Instructions
+### Setup
 In order to install Wing on your machine, run the following commands:
 ```bash
 $ git clone https://github.com/StaleHyena/wing.git
@@ -22,13 +23,19 @@ $ cd wing/
 $ npm install
 $ npm run build
 ```
+### Configuration
+Wing tries to read settings from ``config.json``, and if it cannot find it, it reccurs to ``default-config.json``.
+So, you may create yours by running:
+```bash
+$ cp default-config.json config.json
+```
+From there, you may edit it on the text editor of your choice, and choose the port the server will attempt to run on.
 ## Running the server
 Having finished the installation process sucessfully, you should be able to start the server by running:
 ```bash
 $ npm run start
 ```
 While in the Wing folder.<br/>
-That will attempt to start the server on the port specified by the ``config.json`` file (80 by default).<br/>
 If everything works as intended, you should see something similar to this:
 <img src="https://github.com/StaleHyena/wing/blob/readme-dev/assets/server_start.gif" width="150" height="23"><br/>
 
@@ -53,9 +60,7 @@ You have:<br/>
 ### Client
 Everything that appears on your screen is defined by the function and the demo the admin has chosen.
 ## FAQ
-#### Nice code and all, but, what the hell does "Wing" mean?
+#### Nice code and all, but what the hell does "Wing" mean?
 * It means _Wing is not GeoGebra_, which is another piece of really good software for usecases somewhat similar to the ones Wing is meant for, but it has no **cool networking**.
-#### Wow! Really cool name, whose idea was it?
-* It was a collective idea that we absolutely stole from wine.
 #### Why is this FAQ so short?
 * Because so far we've had very few users and therefore very few questions.
