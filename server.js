@@ -10,14 +10,13 @@ const conf = fetchConfig();
 const server = app.listen(conf.port);
 const io = socket(server);
 
-app.use(express.static(__dirname, { dotfiles: 'allow' }));
-//app.use('/admin', express.static('admin'));
-//app.use('/libs', express.static('libs'));
-//app.use('/client', express.static('client'));
-//app.use(favicon(path.join(__dirname, 'assets', 'favicon.ico')));
-//app.all('/', (req, res) => {
-//  res.redirect('/client');
-//});
+app.use('/admin', express.static('admin'));
+app.use('/libs', express.static('libs'));
+app.use('/client', express.static('client'));
+app.use(favicon(path.join(__dirname, 'assets', 'favicon.ico')));
+app.all('/', (req, res) => {
+  res.redirect('/client');
+});
 
 let vals = [0,0];
 let demo = ""; // hard-coded default
