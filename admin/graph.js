@@ -79,42 +79,41 @@ export default class Graph {
       );
     }
 
+    let vert = [];
+
+    // Populate vertices
+    let x = p.max(0, r.projection.min.x);
+    let y = p.max(0, r.projection.min.y);
+    let c;
+    do {
+      x += r.unit.x;
+      y += r.unit.y;
+      vert.push(p.createVector(x,y));
+      c = (x < r.projection.max.x) || (y < r.projection.max.y);
+    } while(c);
+    let log_copy;
+    log_copy = Object.assign({}, vert);
+    console.log(log_copy);
+
+    // Convert to screen coords
+    vert.forEach((elt, i, arr) => {
+      arr[i] = this.projToDis({x: elt.x, y: elt.y*-1});
+    });
+    log_copy = Object.assign({}, vert);
+    console.log(log_copy);
+
+    // Draw to screen
     s_gb.strokeWeight(this.style.weights.grid);
     s_gb.stroke(this.pallete.grid);
 
-    // columns
-    s_gb.push();
-    s_gb.translate(dispOrigin.x, 0);
-    let mX = (r.projection.width)/r.unit.x;
-    for(let i = 1; i <= mX; i++) {
-      let offx = i * r.unit.x * this.scale_factor.x;
-      s_gb.line(
-        offx,r.display.min.y,
-        offx,r.display.max.y
-      );
-      s_gb.line(
-        -offx,r.display.min.y,
-        -offx,r.display.max.y
-      );
-    }
-    s_gb.pop();
-
-    // rows
-    s_gb.push();
-    s_gb.translate(0, dispOrigin.y);
-    let mY = (-r.projection.height)/r.unit.y;
-    for(let i = 1; i <= mY; i++) {
-      let offy = i * r.unit.y * this.scale_factor.y;
-      s_gb.line(
-        r.display.min.x,offy,
-        r.display.max.x,offy
-      );
-      s_gb.line(
-        r.display.min.x,-offy,
-        r.display.max.x,-offy
-      );
-    }
-    s_gb.pop();
+    vert.forEach((elt, i, arr) => {
+      let up = r.display.min.y;
+      let dw = r.display.max.y;
+      let le = r.display.min.x;
+      let ri = r.display.max.x;
+      s_gb.line(elt.x,up, elt.x,dw);
+      s_gb.line(le,elt.y, ri,elt.y);
+    });
   }
 
   updateRanges(vals) {
@@ -129,13 +128,11 @@ export default class Graph {
     //console.log('unit = '+unit.toString());
 
     {
-      // Y inverted to make graph grow upwards
-      // This hack has bitten me more than once
       let rp = r.projection;
       rp.min.x  = vals.min.x;
       rp.max.x  = vals.max.x;
-      rp.min.y  = vals.max.y;
-      rp.max.y  = vals.min.y;
+      rp.min.y  = vals.min.y;
+      rp.max.y  = vals.max.y;
       rp.width  = rp.max.x - rp.min.x;
       rp.height = rp.max.y - rp.min.y;
     } {
