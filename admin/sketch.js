@@ -170,10 +170,10 @@ function panGraph(x,y) {
 function zoomGraph(z) {
   if(z) {
     const ratio = graph.ranges.projection.width/graph.ranges.projection.height;
-    ranges.min.x = ranges.min.x - z;
-    ranges.max.x = ranges.max.x + z;
-    ranges.min.y = ranges.min.y + z/ratio;
-    ranges.max.y = ranges.max.y - z/ratio;
+    ranges.min.x = ranges.min.x - z * ratio;
+    ranges.max.x = ranges.max.x + z * ratio;
+    ranges.min.y = ranges.min.y - z;
+    ranges.max.y = ranges.max.y + z;
     dirtyRanges = true;
   }
 }

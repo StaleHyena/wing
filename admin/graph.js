@@ -111,16 +111,10 @@ export default class Graph {
       //c = c && vert.length < 2048; // cap size
     } while(c);
 
-    let log_copy;
-    log_copy = Object.assign({}, vert);
-    console.log(log_copy);
-
     // Convert to screen coords
     vert.forEach((elt, i, arr) => {
       arr[i] = this.projToDis({x: elt.x, y: elt.y*-1});
     });
-    log_copy = Object.assign({}, vert);
-    console.log(log_copy);
 
     // Draw to screen
     s_gb.strokeWeight(this.style.weights.grid);
@@ -245,7 +239,8 @@ export default class Graph {
     const resolution = 1000;
     const step = r.projection.width / resolution;
     const dispOrigin = this.displayOrigin;
-    function getPoint(x, gf) {return p.createVector(x, gf(x));}
+    // Y is inverted because display grows downwards
+    function getPoint(x, gf) {return p.createVector(x, gf(x)*-1);}
     function checkBounds(vec,min,max){return (vec.y>max || vec.y<min);}
 
     let x = r.projection.min.x;
@@ -259,7 +254,6 @@ export default class Graph {
     let mX = r.projection.max.x;
     for(; x < mX; x += step) {
       point = getPoint(x, graph.func);
-      point.y *= -1; // Display grows downwards
       let deltay = p.abs(point.y - prev.y);
       let oob = checkBounds(
         point,
