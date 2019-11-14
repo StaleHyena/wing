@@ -7,6 +7,8 @@ let graph_presets = [
   {'name':'csc','e':'1/sin(x)'},
   {'name':'sec','e':'1/cos(x)'},
   {'name':'cot','e':'cos(x)/sin(x)'},
+  {'name':'sin²','e':'sin(x)^2'},
+  {'name':'cos²','e':'cos(x)^2'},
 ];
 
 function graphFromName(name) {
