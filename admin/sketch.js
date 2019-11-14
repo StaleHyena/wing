@@ -161,8 +161,8 @@ function panGraph(x,y) {
   if(dx || dy) {
     ranges.min.x = p_ranges.min.x - dx;
     ranges.max.x = p_ranges.max.x - dx;
-    ranges.min.y = p_ranges.min.y + dy;
-    ranges.max.y = p_ranges.max.y + dy;
+    ranges.min.y = p_ranges.min.y - dy;
+    ranges.max.y = p_ranges.max.y - dy;
     dirtyRanges = true;
   }
 }

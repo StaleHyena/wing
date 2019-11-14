@@ -88,9 +88,29 @@ export default class Graph {
     do {
       x += r.unit.x;
       y += r.unit.y;
-      vert.push(p.createVector(x,y));
+      vert.push(p.createVector(
+        // Keep aligned with origin
+          x - x % r.unit.x,
+          y - y % r.unit.y
+      ));
       c = (x < r.projection.max.x) || (y < r.projection.max.y);
+      //c = c && vert.length < 2048; // cap size
     } while(c);
+
+    x = p.min(0, r.projection.max.x);
+    y = p.min(0, r.projection.max.y);
+    do {
+      x -= r.unit.x;
+      y -= r.unit.y;
+      vert.push(p.createVector(
+        // Keep aligned with origin
+          x - x % r.unit.x,
+          y - y % r.unit.y
+      ));
+      c = (x > r.projection.min.x) || (y > r.projection.min.y);
+      //c = c && vert.length < 2048; // cap size
+    } while(c);
+
     let log_copy;
     log_copy = Object.assign({}, vert);
     console.log(log_copy);
@@ -239,11 +259,12 @@ export default class Graph {
     let mX = r.projection.max.x;
     for(; x < mX; x += step) {
       point = getPoint(x, graph.func);
+      point.y *= -1; // Display grows downwards
       let deltay = p.abs(point.y - prev.y);
       let oob = checkBounds(
         point,
-        this.ranges.projection.max.y,
-        this.ranges.projection.min.y
+        this.ranges.projection.min.y,
+        this.ranges.projection.max.y
       );
       scaled_point = this.projToDis(point);
       scaled_prev = this.projToDis(prev);
@@ -275,7 +296,7 @@ export default class Graph {
     const dispOrigin = this.displayOrigin;
 
     let m_gb = this.marks_gb;
-    let point = this.projToDis(p.createVector(selx, graph_f(selx)));
+    let point = this.projToDis(p.createVector(selx, graph_f(selx)*-1));
 
     m_gb.push();
     m_gb.clear();
@@ -313,7 +334,7 @@ export default class Graph {
     }
     return p.createVector(
       p.map(x, dm.x,dM.x, pm.x,pM.x),
-      p.map(y, dm.y,dM.y, pm.y,pM.y) // haven't tested if it needs inversion
+      p.map(y, dm.y,dM.y, pm.y,pM.y)
     );
   }
 
@@ -326,7 +347,7 @@ export default class Graph {
     let y = vec.y;
     if(clamp) {
       x = p.constrain(vec.x, pm.x, pM.x);
-      y = p.constrain(vec.y, pM.y, pm.y); // inverted, ranges are backwards
+      y = p.constrain(vec.y, pm.y, pM.y);
     }
     return p.createVector(
       p.map(x, pm.x,pM.x, dm.x,dM.x),
