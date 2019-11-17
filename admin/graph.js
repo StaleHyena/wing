@@ -69,29 +69,34 @@ export default class Graph {
     {
       s_gb.strokeWeight(this.style.weights.axis);
       s_gb.stroke(this.pallete.axis);
-      s_gb.line(
-        dispOrigin.x,r.display.min.y,
-        dispOrigin.x,r.display.max.y
-      );
-      s_gb.line(
-        r.display.min.x,dispOrigin.y,
-        r.display.max.x,dispOrigin.y
-      );
+      if(dispOrigin.x > r.display.min.x && dispOrigin.x < r.display.max.x) {
+        s_gb.line(
+          dispOrigin.x,r.display.min.y,
+          dispOrigin.x,r.display.max.y
+        );
+      }
+      if(dispOrigin.y > r.display.min.y && dispOrigin.y < r.display.max.y) {
+        s_gb.line(
+          r.display.min.x,dispOrigin.y,
+          r.display.max.x,dispOrigin.y
+        );
+      }
     }
 
     let vert = [];
 
     // Populate vertices
-    let x = p.max(0, r.projection.min.x);
-    let y = p.max(0, r.projection.min.y);
-    let c;
+    let x, y, c, off;
+    x = p.max(0, r.projection.min.x);
+    y = p.max(0, r.projection.min.y);
+    // Keep aligned with origin
+    off = p.createVector(x % r.unit.x, y & r.unit.y);
     do {
       x += r.unit.x;
       y += r.unit.y;
       vert.push(p.createVector(
-        // Keep aligned with origin
-          x - x % r.unit.x,
-          y - y % r.unit.y
+          x - off.x,
+          y - off.y
       ));
       c = (x < r.projection.max.x) || (y < r.projection.max.y);
       //c = c && vert.length < 2048; // cap size
@@ -99,13 +104,14 @@ export default class Graph {
 
     x = p.min(0, r.projection.max.x);
     y = p.min(0, r.projection.max.y);
+    // Keep aligned with origin
+    off = p.createVector(x % r.unit.x, y & r.unit.y);
     do {
       x -= r.unit.x;
       y -= r.unit.y;
       vert.push(p.createVector(
-        // Keep aligned with origin
-          x - x % r.unit.x,
-          y - y % r.unit.y
+          x - off.x,
+          y - off.y
       ));
       c = (x > r.projection.min.x) || (y > r.projection.min.y);
       //c = c && vert.length < 2048; // cap size
@@ -113,7 +119,7 @@ export default class Graph {
 
     // Convert to screen coords
     vert.forEach((elt, i, arr) => {
-      arr[i] = this.projToDis({x: elt.x, y: elt.y*-1});
+      arr[i] = this.projToDis({x: elt.x, y: elt.y*-1}, true);
     });
 
     // Draw to screen
