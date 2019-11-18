@@ -119,7 +119,7 @@ export default class Graph {
 
     // Convert to screen coords
     vert.forEach((elt, i, arr) => {
-      arr[i] = this.projToDis({x: elt.x, y: elt.y*-1}, true);
+      arr[i] = this.projToDis({x: elt.x, y: elt.y}, true);
     });
 
     // Draw to screen
