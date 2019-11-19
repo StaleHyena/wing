@@ -1,5 +1,5 @@
 export default class Graph {
-  constructor(w,h) {
+  constructor(w,h, config) {
     this.static_gb = p.createGraphics(w,h);
     this.trace_gb  = p.createGraphics(w,h);
     this.marks_gb  = p.createGraphics(w,h);
@@ -9,6 +9,10 @@ export default class Graph {
     this.selectedX = 0;
     this.continuity_threshold = 10000;
 
+    this.pallete = config.pallete;
+    this.style = config.style;
+
+    //TODO: document this
     this.ranges = {
       'projection': {
         'min':{'x':0,'y':0},
@@ -23,30 +27,6 @@ export default class Graph {
         'height':0,
       },
       'unit': p.createVector(0,0),
-    }
-    this.pallete = {
-      'bg': p.color(42),
-      'grid': p.color(166),
-      'trace': p.color(33, 107, 181),
-      'mark': p.color(255, 69),
-      'accent_mark': p.color(230, 75, 75),
-      'axis': p.color(39, 112, 54),
-      'text': p.color(200),
-    }
-    this.style = {
-      'weights': {
-        'grid': 0.5,
-        'axis':3.5,
-        'trace':4,
-        'mark':3,
-      },
-      'padding': 64,
-      //'padding': 12,
-      'text': {
-        'size': 32,
-        'spacing': 40,
-      },
-      'mark_size': 10,
     }
     
     this.graphs = [];
@@ -176,23 +156,6 @@ export default class Graph {
   }
 
   addGraph(graph) {
-    /*
-    let id;
-    const len = this.graphs.length;
-    if(len > 0) {
-      let tally = [];
-      this.graphs.forEach((g) => {
-        tally.push(g.id);
-      });
-      tally.sort();
-      for(let i = 0; i < tally.length; i++) {
-
-      }
-    } else {
-      id = 0;
-    }
-    graph.id = id + 1;
-    */
     this.graphs.push(graph);
     this.drawGraphs();
     this.drawSelection();

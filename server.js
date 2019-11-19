@@ -9,13 +9,22 @@ const process = require('process');
 const conf = fetchConfig();
 const server = app.listen(conf.port);
 const io = socket(server);
+const  admin_dir = path.join(__dirname, 'admin');
+const client_dir = path.join(__dirname, 'client');
+const assets_dir = path.join(__dirname, 'assets');
+const   libs_dir = path.join(__dirname, 'libs');
 
-app.use('/admin', express.static('admin'));
-app.use('/libs', express.static('libs'));
-app.use('/client', express.static('client'));
-app.use(favicon(path.join(__dirname, 'assets', 'favicon.ico')));
+app.use('/admin',  express.static(admin_dir));
+app.use('/libs',   express.static(libs_dir));
+app.use('/client', express.static(client_dir));
+app.use(favicon(path.join(assets_dir, 'favicon.ico')));
 app.all('/', (req, res) => {
   res.redirect('/client');
+});
+// Specific files
+const graphconf = path.join(assets_dir, 'graphconf.json');
+app.get('/graphconf.json', (req, res) => {
+  res.sendFile(graphconf);
 });
 
 let vals = [0,0];

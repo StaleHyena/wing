@@ -41,43 +41,6 @@ const sketch = (p) => {
 
     window.p = p; // Make it accessible globally
 
-    graph = new Graph(p.width,p.height);
-    ranges = {
-      unit: {
-        x: p.PI/2,
-        y: 1,
-      },
-      min: {
-        x: -p.PI,
-        y: -4,
-      },
-      max: {
-        x: 5*p.PI,
-        y: 4,
-      }
-    };
-    panning = false;
-    dirtyRanges = false;
-    graph.updateRanges(ranges);
-    graph.updateGrid();
-    graph.addGraph(
-      {
-        id: 0,
-        color: graph.pallete.trace,
-        func:(x) => { return 0; },
-      }
-    );
-
-    num_clients = 0;
-
-    leftMousePressed = false;
-    mouseGracePeriod = 0;
-    scrubbing = false;
-    scrub_pos = graph.displayOrigin.x;
-    step_max = p.width/40;
-
-    cur_expr = undefined;
-
     ui.init();
     ui.addCallback('demo', updateDemo);
     ui.addCallback('step', updateStep);
@@ -86,7 +49,6 @@ const sketch = (p) => {
 
     net.init(
       function onConnect() {
-        ui.ready();
         ui.updateStatus("Conectado", "#34eb77");
       },
       function onClient(c) {
@@ -97,10 +59,41 @@ const sketch = (p) => {
         ui.updateStatus("Pedido de admin recusado", "#ff0000");
       }
     );
-  }
+
+    // Feed config JSON to graph
+    fetch("/graphconf.json")
+      .then((res) => res.json())
+      .then((conf) => {
+        console.log(conf);
+        graph = new Graph(p.width,p.height, conf);        
+        panning = false;
+        dirtyRanges = false;
+        ranges = conf["default-ranges"];
+        graph.updateRanges(ranges);
+        graph.updateGrid();
+        graph.addGraph(
+          {
+            id: 0,
+            color: graph.pallete.trace,
+            func:(x) => { return 0; },
+          }
+        );
+        scrubbing = false;
+        scrub_pos = graph.displayOrigin.x;
+        step_max = p.width/40;
+        ui.ready();
+      });
+
+    num_clients = 0;
+
+    leftMousePressed = false;
+    mouseGracePeriod = 0;
+
+    cur_expr = undefined;
+}
 
   p.draw = function() {
-    if(cur_expr) {
+    if(graph && cur_expr) {
       let selx = getX();
       // x can come from mouse, from scrubber or not come at all
       if(selx) {
@@ -156,25 +149,29 @@ function getX() {
 }
 
 function panGraph(x,y) {
-  const dx = (x - start_pointerPos.x)/50;
-  const dy = (y - start_pointerPos.y)/50;
-  if(dx || dy) {
-    ranges.min.x = p_ranges.min.x - dx;
-    ranges.max.x = p_ranges.max.x - dx;
-    ranges.min.y = p_ranges.min.y - dy;
-    ranges.max.y = p_ranges.max.y - dy;
-    dirtyRanges = true;
+  if(graph) {
+    const dx = (x - start_pointerPos.x)/50;
+    const dy = (y - start_pointerPos.y)/50;
+    if(dx || dy) {
+      ranges.min.x = p_ranges.min.x - dx;
+      ranges.max.x = p_ranges.max.x - dx;
+      ranges.min.y = p_ranges.min.y - dy;
+      ranges.max.y = p_ranges.max.y - dy;
+      dirtyRanges = true;
+    }
   }
 }
 
 function zoomGraph(z) {
-  if(z) {
-    const ratio = graph.ranges.projection.width/graph.ranges.projection.height;
-    ranges.min.x = ranges.min.x - z * ratio;
-    ranges.max.x = ranges.max.x + z * ratio;
-    ranges.min.y = ranges.min.y - z;
-    ranges.max.y = ranges.max.y + z;
-    dirtyRanges = true;
+  if(graph) {
+    if(z) {
+      const ratio = graph.ranges.projection.width/graph.ranges.projection.height;
+      ranges.min.x = ranges.min.x - z * ratio;
+      ranges.max.x = ranges.max.x + z * ratio;
+      ranges.min.y = ranges.min.y - z;
+      ranges.max.y = ranges.max.y + z;
+      dirtyRanges = true;
+    }
   }
 }
 
@@ -187,17 +184,19 @@ function playpause() {
   mouseGracePeriod = 20;
 }
 function expr(e, id) {
-  cur_expr = e;
-  let g = graph.getGraphById(id);
-  if(g) {
-    g.func = (x) => {
-      try {
-        return e.evaluate({'x':x});
-      } catch (err) {
-        return 0;
-      }
-    };
-    graph.drawGraphs();
+  if(graph) {
+    cur_expr = e;
+    let g = graph.getGraphById(id);
+    if(g) {
+      g.func = (x) => {
+        try {
+          return e.evaluate({'x':x});
+        } catch (err) {
+          return 0;
+        }
+      };
+      graph.drawGraphs();
+    }
   }
 }
 

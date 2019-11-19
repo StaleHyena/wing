@@ -1,0 +1,39 @@
+{
+  "pallete": {
+    "bg": "#2a2a2a",
+    "grid": "#a6a6a6",
+    "trace": "#216bb5",
+    "mark": "rgba(255,255,255, 0.27)",
+    "accent_mark": "#e64b4b",
+    "axis": "#277036",
+    "text": "#c8c8c8"
+  },
+  "style": {
+    "weights": {
+      "grid": 0.5,
+      "axis":3.5,
+      "trace":4,
+      "mark":3
+    },
+    "padding": 12,
+    "text": {
+      "size": 32,
+      "spacing": 40
+    },
+    "mark_size": 10
+  },
+  "default-ranges": {
+    "unit": {
+      "x": 1.57079632679,
+      "y": 1
+    },
+    "min": {
+      "x": -3.14159265359,
+      "y": -4
+    },
+    "max": {
+      "x": 15.7079632679,
+      "y": 4
+    }
+  }
+}
