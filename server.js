@@ -14,22 +14,29 @@ const client_dir = path.join(__dirname, 'client');
 const assets_dir = path.join(__dirname, 'assets');
 const   libs_dir = path.join(__dirname, 'libs');
 
-app.use('/admin',  express.static(admin_dir));
-app.use('/libs',   express.static(libs_dir));
-app.use('/client', express.static(client_dir));
-app.use(favicon(path.join(assets_dir, 'favicon.ico')));
-app.all('/', (req, res) => {
-  res.redirect('/client');
-});
-// Specific files
-const graphconf = path.join(assets_dir, 'graphconf.json');
-app.get('/graphconf.json', (req, res) => {
-  res.sendFile(graphconf);
-});
-
 let vals = [0,0];
 let demo = ""; // hard-coded default
 let admin_socket = -1;
+
+function setupTUI() {
+  setInterval(printVals, 500);
+  let stdin = process.stdin;
+  stdin.setEncoding('utf8');
+  stdin.resume();
+  stdin.on('data', (raw_chunk) => {
+    let chunk = raw_chunk.trim();
+    if(chunk == 'q' || chunk == 'quit') {
+      console.log('quitting...');
+      process.exit();
+    } else if(chunk == 'l' || chunk == 'list') {
+      printClients();
+    } else if(chunk == 'r' || chunk == 'reset') {
+      admin_socket = -1;
+      console.log('waiting new admin...');
+    }
+  });
+  console.log("Enter 'q' to quit, 'l' to show client list, or 'r' to clear admin.");
+}
 
 function setupNet() {
   io.sockets.on('connection', (socket) => {
@@ -70,18 +77,19 @@ function setupNet() {
       emitClientsAdmin();
     });
   });
-}
 
-setupNet();
+  function emitClientsAdmin() {
+    if(admin_socket != -1) {
+      io.to(admin_socket).emit('clients', io.engine.clientsCount - 1);
+    }
+  }
+}
 
 let statSymbols = ['|','/','-','\\'];
 let statCounter = 0;
-
 function printVals() {
   let x = Math.round(vals[0]*1000)/1000;
   let y = Math.round(vals[1]*1000)/1000;
-  //let x = vals[0];
-  //let y = vals[1];
   process.stdout.write(
     '(' + x + ',' + y + ')' +
     ', demo: ' + demo + ' ' +
@@ -94,13 +102,43 @@ function printVals() {
   }
 }
 
-function emitClientsAdmin() {
-  if(admin_socket != -1) {
-    io.to(admin_socket).emit('clients', io.engine.clientsCount - 1);
+function printClients() {
+  let n = io.engine.clientsCount;
+  if(n > 0) {
+    console.log(
+      'There ' + ((n > 1)? 'are ':'is ') + n +
+      ' client' + ((n > 1)? 's ':' ') + 'connected.'
+    );
+  } else {
+    console.log('There are no clients connected.');
   }
-}
 
-setInterval(printVals, 500);
+  // https://stackoverflow.com/a/24145381
+  function connClients(roomId, namespace) {
+    let res = [];
+    // the default namespace is "/"
+    let ns = io.of(namespace ||"/");
+
+    if (ns) {
+      for (var id in ns.connected) {
+        if(roomId) {
+          var index = ns.connected[id].rooms.indexOf(roomId);
+          if(index !== -1) {
+            res.push(ns.connected[id]);
+          }
+        } else {
+          res.push(ns.connected[id]);
+        }
+      }
+    }
+    return res;
+  }
+
+  connClients().forEach((v) => {
+    let is_admin = v.id == admin_socket;
+    console.log(v.id + ((is_admin)? ' (admin)':''));
+  });
+}
 
 function fetchConfig() {
   const filename = "config.json";
@@ -116,3 +154,22 @@ function fetchConfig() {
     return JSON.parse(fs.readFileSync(fallback, 'utf8'));
   }
 }
+
+// "Main"
+
+setupTUI();
+setupNet();
+
+app.use('/admin',  express.static(admin_dir));
+app.use('/libs',   express.static(libs_dir));
+app.use('/client', express.static(client_dir));
+app.use(favicon(path.join(assets_dir, 'favicon.ico')));
+app.all('/', (req, res) => {
+  res.redirect('/client');
+});
+// Specific files
+const graphconf = path.join(assets_dir, 'graphconf.json');
+app.get('/graphconf.json', (req, res) => {
+  res.sendFile(graphconf);
+});
+
