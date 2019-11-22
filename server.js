@@ -21,21 +21,21 @@ let admin_socket = -1;
 function setupTUI() {
   setInterval(printVals, 500);
   let stdin = process.stdin;
+  stdin.setRawMode(true);
   stdin.setEncoding('utf8');
   stdin.resume();
-  stdin.on('data', (raw_chunk) => {
-    let chunk = raw_chunk.trim();
-    if(chunk == 'q' || chunk == 'quit') {
+  stdin.on('data', (key) => {
+    if(key == 'q') {
       console.log('quitting...');
       process.exit();
-    } else if(chunk == 'l' || chunk == 'list') {
+    } else if(key == 'l') {
       printClients();
-    } else if(chunk == 'r' || chunk == 'reset') {
+    } else if(key == 'r') {
       admin_socket = -1;
       console.log('waiting new admin...');
     }
   });
-  console.log("Enter 'q' to quit, 'l' to show client list, or 'r' to clear admin.");
+  console.log("Press (q) to quit, (l) to show client list, or (r) to clear admin.");
 }
 
 function setupNet() {
@@ -43,12 +43,12 @@ function setupNet() {
     emitClientsAdmin();
     socket.emit('vals', vals);
     socket.emit('demo', demo);
-    console.log('Socket ' + socket.id + ' has connected.');
+    console.log('CONN> Socket ' + socket.id + ' has connected.');
 
     socket.on('admin', () => {
       if(admin_socket == -1) {
         admin_socket = socket.id;
-        console.log(socket.id + ' is the new admin.');
+        console.log('ADMIN> ' + socket.id + ' is the new admin.');
         emitClientsAdmin();
 
         socket.on('vals', (v) => {
@@ -67,7 +67,7 @@ function setupNet() {
     });
 
     socket.on('disconnect', (reason) => {
-      let s = 'Socket ' + socket.id;
+      let s = 'DISCONN> Socket ' + socket.id;
       if(socket.id == admin_socket) {
         s += ' (admin)';
         admin_socket = -1;
@@ -136,7 +136,7 @@ function printClients() {
 
   connClients().forEach((v) => {
     let is_admin = v.id == admin_socket;
-    console.log(v.id + ((is_admin)? ' (admin)':''));
+    console.log('\t' + v.id + ((is_admin)? ' (admin)':''));
   });
 }
 
