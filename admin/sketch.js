@@ -47,18 +47,15 @@ const sketch = (p) => {
     ui.addCallback('play/pause', playpause);
     ui.addCallback('expr', expr);
 
-    net.init(
-      function onConnect() {
-        ui.updateStatus("Conectado", "#34eb77");
-      },
-      function onClient(c) {
-        num_clients = c;
-        ui.updateClientCount(num_clients);
-      },
-      function onDeny() {
-        ui.updateStatus("Pedido de admin recusado", "#ff0000");
-      }
-    );
+    net.init();
+    net.addCallback('connect',
+      () => { ui.updateStatus("Conectado", "#34eb77"); });
+    net.addCallback('clients',
+      (c) => { num_clients = c; ui.updateClientCount(num_clients); });
+    net.addCallback('denied',
+      () => { ui.updateStatus("Pedido de admin recusado", "#ff0000"); });
+    net.addCallback('revoked',
+      () => { ui.updateStatus("Privilégios de admin revogados", "#cc0000"); });
 
     // Feed config JSON to graph
     fetch("/graphconf.json")
