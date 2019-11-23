@@ -9,23 +9,39 @@ body {
 #p5canvas-holder {
   width: 100%;
   height: 90%;
+  margin: 0;
 }
-
-#ui-bar {
-  background: #537cc9;
+#ui-bar{
+  display: flex;
+  background: #111111dc;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  margin: 0;
+  height: 10%;
+}
+#left-bar,#right-bar {
   display: flex;
   flex-direction: row;
-  flex-wrap: wrap;
-  border: 0px solid transparent;
+  flex-wrap: nowrap;
   margin: auto;
+  height: auto;
+  width: 45%;
   padding: 8px 18px;
-  border-radius: 16px;
-  width: 95%;
   color: white;
   text-align: center;
 }
+#playpause{
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  background: #505050;
+  align-items: center;
+  justify-content: center;
+}
 
-#ui-bar > * {
+#left-bar > *,#right-bar > * {
   margin-right: 8px;
 }
 
