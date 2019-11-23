@@ -24,6 +24,7 @@ body {
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
+  justify-content: space-around;
   margin: auto;
   height: auto;
   width: 45%;
@@ -40,7 +41,13 @@ body {
   align-items: center;
   justify-content: center;
 }
-
+#playpause > *{ 
+user-select: none;
+-moz-user-select: none;
+-webkit-user-drag: none;
+-webkit-user-select: none;
+-ms-user-select: none;
+}
 #left-bar > *,#right-bar > * {
   margin-right: 8px;
 }
@@ -52,14 +59,25 @@ body {
 #ui-bar > div > h2 {
   margin: 2.5px 0;
 }
-
+#step-slider{
+  display:flex;
+  flex-direction: column; 
+  justify-content: flex-start;
+  padding: 0%;
+  margin: 0;
+  line-height: 0%;
+}
+#connections{
+  display: flex;
+  flex-direction: column;
+  line-height: 0;
+}
 #status-txt {
-  margin-left: auto;
   font-weight: bold;
 }
 
 #range-menu {
-  background: #7896cf;
+  background: #505050;
   border: 0px solid transparent;
   border-radius: 10px;
   padding: 8px 18px;
