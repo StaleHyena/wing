@@ -26,13 +26,13 @@ function setupTUI() {
   stdin.resume();
   stdin.on('data', (key) => {
     if(key == 'q') {
-      console.log('quitting...');
+      console.log('Quitting...');
       process.exit();
     } else if(key == 'l') {
       printClients();
     } else if(key == 'r') {
-      admin_socket = -1;
-      console.log('waiting new admin...');
+      revokeAdmin();
+      console.log('Waiting new admin...');
     }
   });
   console.log("Press (q) to quit, (l) to show client list, or (r) to clear admin.");
@@ -45,27 +45,8 @@ function setupNet() {
     socket.emit('demo', demo);
     console.log('CONN> Socket ' + socket.id + ' has connected.');
 
-    socket.on('admin', () => {
-      if(admin_socket == -1) {
-        admin_socket = socket.id;
-        console.log('ADMIN> ' + socket.id + ' is the new admin.');
-        emitClientsAdmin();
-
-        socket.on('vals', (v) => {
-          vals = v;
-          socket.broadcast.volatile.emit('vals', vals);
-        });
-        socket.on('demo', (d) => {
-          demo = d;
-          socket.broadcast.volatile.emit('demo', demo);
-        });
-      } else {
-        console.log(socket.id + ' failed to become admin.');
-        socket.emit('denied');
-        socket.disconnect();
-      }
-    });
-
+    adminEvents(socket);
+    
     socket.on('disconnect', (reason) => {
       let s = 'DISCONN> Socket ' + socket.id;
       if(socket.id == admin_socket) {
@@ -78,10 +59,48 @@ function setupNet() {
     });
   });
 
-  function emitClientsAdmin() {
-    if(admin_socket != -1) {
-      io.to(admin_socket).emit('clients', io.engine.clientsCount - 1);
+}
+
+function adminEvents(socket) {
+  socket.on('admin', () => {
+    if(admin_socket == -1) {
+      admin_socket = socket.id;
+      console.log('ADMIN> ' + socket.id + ' is the new admin.');
+      emitClientsAdmin();
+
+      socket.on('vals', (v) => {
+        if(socket.id == admin_socket) {
+          vals = v;
+          socket.broadcast.volatile.emit('vals', vals);
+        }
+      });
+      socket.on('demo', (d) => {
+        if(socket.id == admin_socket) {
+          demo = d;
+          socket.broadcast.emit('demo', demo);
+        }
+      });
+    } else {
+      console.log(socket.id + ' failed to become admin.');
+      socket.emit('denied');
+      socket.disconnect();
     }
+  });
+}
+
+function revokeAdmin() {
+  if(admin_socket != -1) {
+    io.to(admin_socket).emit('revoked');
+    console.log('ADMIN> Revoked admin of ' + admin_socket);
+    admin_socket = -1;
+  } else {
+    console.log('ADMIN> No admin to revoke!');
+  }
+}
+
+function emitClientsAdmin() {
+  if(admin_socket != -1) {
+    io.to(admin_socket).emit('clients', io.engine.clientsCount - 1);
   }
 }
 
@@ -96,9 +115,9 @@ function printVals() {
     statSymbols[statCounter] + '\r'
   );
 
-  statCounter++;    
-  if(statCounter >= statSymbols.length) {    
-    statCounter = 0;    
+  statCounter++;
+  if(statCounter >= statSymbols.length) {
+    statCounter = 0;
   }
 }
 
