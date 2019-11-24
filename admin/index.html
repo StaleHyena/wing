@@ -11,23 +11,32 @@
     <script src="/libs/vendors~admin.js" type="module"></script>
     <script src="/libs/vendors~admin~client.js" type="module"></script>
   </head>
+  <style type="text/css">
+    body{overflow: hidden;}
+    </style>
   <body>
     <div id="p5canvas-holder"></div>
     <div id="ui-bar">
       <div id="left-bar">
-        <select id="graph-menu"></select>
-        <select id="demo-menu"></select>
-        <div id="range-menu"></div>
+          <div id="demos">
+            <h4>Demo:&nbsp</h4>
+            <select id="demo-menu"></select>
+          </div>
+          <div id="range-menu">
+            <select id="graph-menu"></select>
+          </div>
       </div>
-      <div id="playpause">
-      <img src="/assets/images/playpause.png" draggable="false" height="40px" width="40px">
+      <div>
+      <button id="playpause">
+        <img src="/assets/images/playpause.png" height="auto" width="auto">
+      </button>
       </div>
       <div id="right-bar">
         <div id="step-slider">
           <h3>Velocidade</h3>
         </div>
         <div id="connections">
-        <p id="client-counter">Nenhum cliente conectado</p>
+        <p id="client-counter">Clientes:&nbsp</p>
         <p id="status-txt">Desconectado</p>
         </div>
       </div>
