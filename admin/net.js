@@ -11,7 +11,7 @@ class Network {
     this.socket = socketio();
     this.socket.on('connect', () => {
       this.socket.on('clients', (c) => {
-        let onClient = this.callbacks.get('client');
+        let onClient = this.callbacks.get('clients');
         if(onClient) {
           onClient(c);
         }
