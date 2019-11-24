@@ -9,23 +9,47 @@ body {
 #p5canvas-holder {
   width: 100%;
   height: 90%;
+  margin: 0;
 }
-
-#ui-bar {
-  background: #537cc9;
+#ui-bar{
+  display: flex;
+  background: #111111dc;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  margin: 0;
+  height: 10%;
+  position: fixed;
+  bottom: 0%;
+  width: 100%;
+}
+#left-bar,#right-bar {
   display: flex;
   flex-direction: row;
-  flex-wrap: wrap;
-  border: 0px solid transparent;
+  flex-wrap: nowrap;
+  justify-content: space-around;
   margin: auto;
+  height: auto;
+  width: 45%;
   padding: 8px 18px;
-  border-radius: 16px;
-  width: 95%;
   color: white;
   text-align: center;
 }
+#playpause{
+  width: 4.5vw;
+  height: 4.5vw;
+  border-radius: 50%;
+  border-color: #686868;
+  background: #505050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-#ui-bar > * {
+#playpause:hover{
+  background: #5f5f5f;
+}
+#left-bar > *,#right-bar > * {
   margin-right: 8px;
 }
 
@@ -36,16 +60,33 @@ body {
 #ui-bar > div > h2 {
   margin: 2.5px 0;
 }
-
+#step-slider{
+  display:flex;
+  flex-direction: column; 
+  justify-content: flex-start;
+  padding: 0%;
+  margin: 0;
+  line-height: 0%;
+}
+#connections{
+  display: flex;
+  flex-direction: column;
+  line-height: 0;
+}
 #status-txt {
-  margin-left: auto;
   font-weight: bold;
 }
-
-#range-menu {
-  background: #7896cf;
+#demos, #range-menu{
   border: 0px solid transparent;
   border-radius: 10px;
-  padding: 8px 18px;
+  padding: 4px 10px;
+  display: flex;
+  flex-direction: column;
+  line-height: 0%;
+  flex-direction: column;
+  justify-content: space-evenly;
+  align-items: center;
 }
-
+#demos{
+  flex-direction: row;
+}
