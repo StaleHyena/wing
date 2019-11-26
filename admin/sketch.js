@@ -10,7 +10,6 @@ let num_clients;
 let aspect_ratio;
 
 let cur_demo;
-let cur_expr;
 
 let graph;
 let scrubbing;
@@ -62,16 +61,16 @@ const sketch = (p) => {
       .then((res) => res.json())
       .then((conf) => {
         console.log(conf);
-        graph = new Graph(p.width,p.height, conf);        
+        graph = new Graph(p.width,p.height, conf);
+        window.graph = graph;
         panning = false;
         dirtyRanges = false;
         ranges = conf["default-ranges"];
         graph.updateRanges(ranges);
         graph.updateGrid();
-        graph.addGraph(
+        graph.add(
           {
-            id: 0,
-            color: graph.pallete.trace,
+            clr: graph.pallete.trace,
             func:(x) => { return 0; },
           }
         );
@@ -85,12 +84,10 @@ const sketch = (p) => {
 
     leftMousePressed = false;
     mouseGracePeriod = 0;
-
-    cur_expr = undefined;
 }
 
   p.draw = function() {
-    if(graph && cur_expr) {
+    if(graph) {
       let selx = getX();
       // x can come from mouse, from scrubber or not come at all
       if(selx) {
@@ -111,7 +108,7 @@ const sketch = (p) => {
       if(dirtyRanges) {
         graph.updateRanges(ranges);
         graph.updateGrid();
-        graph.drawGraphs();
+        graph.drawExprs();
         dirtyRanges = false;
       }
       else if(mouseGracePeriod > 0) {
@@ -180,19 +177,18 @@ function playpause() {
   scrubbing = !scrubbing;
   mouseGracePeriod = 20;
 }
-function expr(e, id) {
+function expr(e, label) {
   if(graph) {
-    cur_expr = e;
-    let g = graph.getGraphById(id);
-    if(g) {
-      g.func = (x) => {
+    let expr_obj = graph.exprman.expr_map.get(label);
+    if(expr_obj) {
+      expr_obj.func = (x) => {
         try {
           return e.evaluate({'x':x});
         } catch (err) {
           return 0;
         }
       };
-      graph.drawGraphs();
+      graph.drawExprs();
     }
   }
 }
