@@ -26,7 +26,7 @@ class Network {
       this.socket.on('denied', () => {
         let onDenied = this.callbacks.get('denied');
         if(onDenied) {
-          onDeny();
+          onDenied();
         }
       });
       this.socket.on('revoked', () => {
