@@ -3,13 +3,11 @@ export default class Graph {
     this.static_gb = p.createGraphics(w,h);
     this.trace_gb  = p.createGraphics(w,h);
     this.marks_gb  = p.createGraphics(w,h);
-    this.exprman   = new ExprMan();
     this.origin = p.createVector();
     this.displayOrigin = p.createVector();
     this.scale_factor = p.createVector();
     this.selectedX = 0;
     this.continuity_threshold = 10000;
-
     this.pallete = config.pallete;
     this.style = config.style;
 
@@ -29,14 +27,19 @@ export default class Graph {
       },
       'unit': p.createVector(0,0),
     }
+
+    this.exprman = new ExprMan();
+    this.seekbar = new Seekbar(this);
+
     this.updateRanges({
       unit: { x:1,y:1 },
       min:  { x:1,y:1 },
       max:  { x:1,y:1 },
     });
     this.updateGrid();
-  }
 
+    this.seekbar.bound_loop = true;
+  }
   updateGrid() {
     let s_gb = this.static_gb;
     const r = this.ranges;
@@ -113,7 +116,6 @@ export default class Graph {
       s_gb.line(le,elt.y, ri,elt.y);
     });
   }
-
   updateRanges(vals) {
     let s_gb = this.static_gb;
     let orig = this.origin;
@@ -152,27 +154,16 @@ export default class Graph {
       r.display.height/r.projection.height
     );
   }
-
   add(expr) {
     let label = this.exprman.nextLabel();
     this.exprman.add(label, expr);
     this.drawExprs();
-    this.drawSelection();
+    this.seekbar.draw();
   }
-
   rem(label) {
     this.exprman.rem(label);
     this.drawExprs();
   }
-
-  selectDisp(x) {
-    return;
-  }
-
-  getSelection() {
-    return 0;
-  }
-
   drawExprs() {
     this.trace_gb.clear();
     this.exprman.expr_map.forEach((val, key, map) => {
@@ -180,9 +171,8 @@ export default class Graph {
         this.drawExpr(val);
       }
     });
-    this.drawSelection();
+    this.seekbar.draw();
   }
-
   drawExpr(expr) {
     if(!expr){ return; }
     let t_gb = this.trace_gb;
@@ -225,11 +215,6 @@ export default class Graph {
       }
     }
   }
-
-  drawSelection() {
-    return;
-  }
-
   disToProj(vec, clamp = false) {
     const dm = this.ranges.display.min;
     const dM = this.ranges.display.max;
@@ -246,7 +231,6 @@ export default class Graph {
       p.map(y, dm.y,dM.y, pm.y,pM.y)
     );
   }
-
   projToDis(vec, clamp = false) {
     const dm = this.ranges.display.min;
     const dM = this.ranges.display.max;
@@ -263,6 +247,13 @@ export default class Graph {
       p.map(y, pm.y,pM.y, dm.y,dM.y)
     );
   }
+  draw() {
+    this.seekbar.update();
+    p.image(this.static_gb,0,0);
+    p.image(this.trace_gb,0,0);
+    p.image(this.marks_gb,0,0);
+    this.seekbar.draw();
+  }
 }
 
 class ExprMan {
@@ -272,7 +263,6 @@ class ExprMan {
     let allowed_labels = "abcdefghijklmnopqrstuvwz".split('');
     allowed_labels.forEach((e) => { this.expr_map.set(e, null); });
   }
-
   nextLabel() {
     let label = undefined;
     let keys = this.expr_map.keys();
@@ -296,32 +286,57 @@ class ExprMan {
 }
 
 class Seekbar {
-  constructor(ranges, gb, exprman) {
-    this.ranges = ranges;
-    this.gb = gb;
-    this.exprman = exprman;
+  constructor(graph) {
+    this.graph = graph;
+    this.gb = this.graph.marks_gb;
     this.x = 0;
-    this.min_x = this.ranges.projection.min.x;
-    this.max_x = this.ranges.projection.max.x;
+    this.min_x = this.graph.ranges.projection.min.x;
+    this.max_x = this.graph.ranges.projection.max.x;
     this.bound_loop = false;
     this.val = [];
     this.vel = 0;
-    this.clr = p.color(0);
+    this.pallete = this.graph.pallete;
+    this.style   = this.graph.style;
+    this.playing = false;
   }
-
-  setX(x) { this.x = x; }
-  setVel(v) { this.vel = v; }
+  setX(x) {
+    let projX = this.graph.disToProj(p.createVector(x,0)).x;
+    const rp = this.graph.ranges.projection;
+    this.x = p.constrain(projX, rp.min.x, rp.max.x);
+  }
+  setVel(v) {
+    if(v >= 0) {
+      this.vel = v;
+    }
+  }
   update() {
-    this.pos.x += this.vel;
+    if(this.playing) {
+      this.x += this.vel;
+      if(this.bound_loop && this.x > this.max_x) {
+        this.x = this.min_x;
+      }
+    }
   }
   draw() {
+    const ranges = this.graph.ranges;
+    const disp = ranges.display;
+    const proj = ranges.projection;
+
+    let coord = this.graph.projToDis(p.createVector(this.x,0));
+    this.gb.push();
+    this.gb.clear();
     this.gb.colorMode(p.RGB);
-    this.gb.stroke(this.clr);
-    this.gb.line(this.x, 0, this.x, this.gb.height);
+    this.gb.stroke(this.pallete.mark);
+    this.gb.strokeWeight(this.style.weights.mark);
+    this.gb.line(coord.x, disp.min.y, coord.x, disp.max.y);
+
     this.gb.noStroke();
-    this.exprman.expr_map.forEach((val, key) => {
+    this.gb.fill(this.pallete.accent_mark);
+    this.graph.exprman.expr_map.forEach((val, key) => {
       if(val !== null) {
-        console.log(`${key}:${val}`);
+        let y = val.func(this.x);
+        coord = this.graph.projToDis(p.createVector(this.x, y*-1));
+        this.gb.circle(coord.x,coord.y, this.style.mark_size);
       }
     });
   }

@@ -12,8 +12,6 @@ let aspect_ratio;
 let cur_demo;
 
 let graph;
-let scrubbing;
-let scrub_pos;
 let scrub_step;
 let step_max;
 
@@ -74,8 +72,6 @@ const sketch = (p) => {
             func:(x) => { return 0; },
           }
         );
-        scrubbing = false;
-        scrub_pos = graph.displayOrigin.x;
         step_max = p.width/40;
         ui.ready();
       });
@@ -84,24 +80,18 @@ const sketch = (p) => {
 
     leftMousePressed = false;
     mouseGracePeriod = 0;
-}
+  }
 
   p.draw = function() {
     if(graph) {
       let selx = getX();
       // x can come from mouse, from scrubber or not come at all
       if(selx) {
-        graph.selectDisp(selx);
-        let v = graph.getSelection();
+        graph.seekbar.setX(selx);
+        let v = graph.seekbar.x;
         net.emitData('vals', [v.x,v.y]);
       }
 
-      if(scrubbing) {
-        scrub_pos += scrub_step;
-        if(scrub_pos > graph.ranges.display.max.x) {
-          scrub_pos = graph.ranges.display.min.x;
-        }
-      }
       if(panning) {
         panGraph(p.mouseX, p.mouseY);
       }
@@ -114,9 +104,7 @@ const sketch = (p) => {
       else if(mouseGracePeriod > 0) {
         mouseGracePeriod -= 1;
       }
-      p.image(graph.static_gb,0,0);
-      p.image(graph.trace_gb,0,0);
-      p.image(graph.marks_gb,0,0);
+      graph.draw();
     } else {
       p.background(0);
       p.fill(255);
@@ -133,10 +121,7 @@ const sketch = (p) => {
 }
 
 function getX() {
-  if(scrubbing) {
-    return scrub_pos;
-  } else if (leftMousePressed) {
-    scrub_pos = p.mouseX;
+  if(leftMousePressed) {
     return p.mouseX;
   }
   return undefined;
@@ -174,7 +159,8 @@ function updateStep(v) {
   scrub_step = p.map(p.pow(v,3), 0.0,1.0, 0.0,step_max);
 }
 function playpause() {
-  scrubbing = !scrubbing;
+  if(!graph) { return; }
+  graph.seekbar.playing ^= true;
   mouseGracePeriod = 20;
 }
 function expr(e, label) {
