@@ -249,10 +249,13 @@ export default class Graph {
   }
   draw() {
     this.seekbar.update();
+    this.seekbar.draw();
     p.image(this.static_gb,0,0);
     p.image(this.trace_gb,0,0);
     p.image(this.marks_gb,0,0);
-    this.seekbar.draw();
+  }
+  update() {
+    this.seekbar.update();
   }
 }
 
@@ -290,9 +293,9 @@ class Seekbar {
     this.graph = graph;
     this.gb = this.graph.marks_gb;
     this.x = 0;
-    this.min_x = this.graph.ranges.projection.min.x;
-    this.max_x = this.graph.ranges.projection.max.x;
     this.bound_loop = false;
+    this.min_x = 0;
+    this.max_x = 0;
     this.val = [];
     this.vel = 0;
     this.pallete = this.graph.pallete;
@@ -300,6 +303,7 @@ class Seekbar {
     this.playing = false;
   }
   setX(x) {
+    if(this.playing) {return;}
     let projX = this.graph.disToProj(p.createVector(x,0)).x;
     const rp = this.graph.ranges.projection;
     this.x = p.constrain(projX, rp.min.x, rp.max.x);
@@ -309,7 +313,18 @@ class Seekbar {
       this.vel = v;
     }
   }
+  getVals() {
+    let acc = [];
+    this.graph.exprman.expr_map.forEach((val) => {
+      if(val !== null) {
+        acc.push(val.func(this.x));
+      }});
+    return acc;
+  }
   update() {
+    this.min_x = this.graph.ranges.projection.min.x;
+    this.max_x = this.graph.ranges.projection.max.x;
+
     if(this.playing) {
       this.x += this.vel;
       if(this.bound_loop && this.x > this.max_x) {
@@ -332,12 +347,9 @@ class Seekbar {
 
     this.gb.noStroke();
     this.gb.fill(this.pallete.accent_mark);
-    this.graph.exprman.expr_map.forEach((val, key) => {
-      if(val !== null) {
-        let y = val.func(this.x);
-        coord = this.graph.projToDis(p.createVector(this.x, y*-1));
-        this.gb.circle(coord.x,coord.y, this.style.mark_size);
-      }
+    this.getVals().forEach((y) => {
+      coord = this.graph.projToDis(p.createVector(this.x, y*-1));
+      this.gb.circle(coord.x,coord.y, this.style.mark_size);
     });
   }
 }

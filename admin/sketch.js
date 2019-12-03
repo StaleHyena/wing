@@ -72,7 +72,7 @@ const sketch = (p) => {
             func:(x) => { return 0; },
           }
         );
-        step_max = p.width/40;
+        step_max = graph.ranges.projection.width/40;
         ui.ready();
       });
 
@@ -84,12 +84,11 @@ const sketch = (p) => {
 
   p.draw = function() {
     if(graph) {
+      graph.update();
+
       let selx = getX();
-      // x can come from mouse, from scrubber or not come at all
       if(selx) {
         graph.seekbar.setX(selx);
-        let v = graph.seekbar.x;
-        net.emitData('vals', [v.x,v.y]);
       }
 
       if(panning) {
@@ -104,6 +103,13 @@ const sketch = (p) => {
       else if(mouseGracePeriod > 0) {
         mouseGracePeriod -= 1;
       }
+      
+      let seekb = graph.seekbar;
+      let v = seekb.getVals();
+      if(v && v[0]) {
+        net.emitData('vals', [seekb.x,v[0]]);
+      }
+
       graph.draw();
     } else {
       p.background(0);
@@ -156,7 +162,11 @@ function zoomGraph(z) {
 
 function updateDemo(d) { cur_demo = d; net.emitData('demo', d.name); }
 function updateStep(v) {
-  scrub_step = p.map(p.pow(v,3), 0.0,1.0, 0.0,step_max);
+  if(graph) {
+    let step = p.map(p.pow(v,3), 0.0,1.0, 0.0,step_max);
+    graph.seekbar.setVel(step);
+    console.log(`step:${step}`);
+  }
 }
 function playpause() {
   if(!graph) { return; }
