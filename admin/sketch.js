@@ -1,5 +1,5 @@
 import p5 from "p5";
-import Graph from "./graph.js";
+import { Graph, ExprMan, Seekbar, GraphSpace } from "./graph.js";
 import ui from "./ui.js";
 import net from "./net.js";
 import { create, all } from 'mathjs/number'
@@ -58,13 +58,15 @@ const sketch = (p) => {
     fetch("/graphconf.json")
       .then((res) => res.json())
       .then((conf) => {
-        console.log(conf);
-        graph = new Graph(p.width,p.height, conf);
+        ranges = conf["default-ranges"];
+        let gspace = new GraphSpace();
+        gspace.setMin(ranges.min);
+        gspace.setMax(ranges.max);
+        gspace.unit = ranges.unit;
+        graph = new Graph(p.width,p.height, gspace, conf);
         window.graph = graph;
         panning = false;
         dirtyRanges = false;
-        ranges = conf["default-ranges"];
-        graph.updateRanges(ranges);
         graph.updateGrid();
         graph.add(
           {
@@ -72,7 +74,7 @@ const sketch = (p) => {
             func:(x) => { return 0; },
           }
         );
-        step_max = graph.ranges.projection.width/40;
+        step_max = graph.space.width/40;
         ui.ready();
       });
 
@@ -86,7 +88,7 @@ const sketch = (p) => {
     if(graph) {
       graph.update();
 
-      let selx = getX();
+      let selx = graph.disToSpace({'x':getX(),'y':0}, true).x;
       if(selx) {
         graph.seekbar.setX(selx);
       }
@@ -105,12 +107,12 @@ const sketch = (p) => {
       }
       
       let seekb = graph.seekbar;
-      let v = seekb.getVals();
+      let v = seekb.getVals(graph.exprman);
       if(v && v[0]) {
         net.emitData('vals', [seekb.x,v[0]]);
       }
 
-      graph.draw();
+      graph.draw(0,0);
     } else {
       p.background(0);
       p.fill(255);
@@ -150,7 +152,7 @@ function panGraph(x,y) {
 function zoomGraph(z) {
   if(graph) {
     if(z) {
-      const ratio = graph.ranges.projection.width/graph.ranges.projection.height;
+      const ratio = graph.space.width/graph.space.height;
       ranges.min.x = ranges.min.x - z * ratio;
       ranges.max.x = ranges.max.x + z * ratio;
       ranges.min.y = ranges.min.y - z;
