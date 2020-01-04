@@ -5,6 +5,7 @@ import { demos, demoFromName } from './demos.js'
 let socket;
 let vals;
 let demo;
+let custom_data;
 
 const sketch = (p) => {
   p.setup = function() {
@@ -13,12 +14,13 @@ const sketch = (p) => {
     vals = [0,0]
     setupNet();
     p.background(0);
+    custom_data = {};
   }
 
   p.draw = function() {
     if(demo != null) {
       let f = demo.f;
-      f(p, vals);
+      f(p, vals, custom_data);
     } else {
       p.fill(255);
       p.textAlign(p.CENTER);

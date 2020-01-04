@@ -10,7 +10,6 @@ export class Graph {
       r.display.height/r.projection.height
     );*/
     this.selectedX = 0;
-    this.continuity_threshold = 10000;
     this.pallete = config.pallete;
     this.style = config.style;
 
@@ -123,6 +122,9 @@ export class Graph {
     // Y is inverted because display Y coords grow downwards
     function getPoint(x, gf) { return { 'x': x, 'y': gf(x)*-1 }; }
     function checkBounds(v){ return v.y > space.max.y || v.y < space.min.y; }
+    function clamp(num, min, max) {
+      return Math.min(Math.max(num, min), max);
+    }
 
     let x = space.min.x;
     let point;
@@ -134,20 +136,29 @@ export class Graph {
     t_gb.stroke(expr.clr);
     for(; x < space.max.x; x += step) {
       point = getPoint(x, expr.func);
-      prev = { ...point };
-      if(checkBounds(point)) {continue;}
 
-      let delta_y = p.abs(point.y - prev.y);
       scaled_point = this.spaceToDis(point);
-      scaled_prev  = this.spaceToDis(prev);
-      if(delta_y > this.continuity_threshold) {
-        t_gb.point(scaled_point.x,scaled_point.y);
-      } else {
-        t_gb.line(
-          scaled_prev.x,scaled_prev.y,
-          scaled_point.x,scaled_point.y
-        );
+      // Don't lose continuity when oob
+      if(checkBounds(point)) {
+        if(!checkBounds(prev)) {
+          // Optimal solution calcs the x for intersection,
+          // Clamping to size is close enough
+          // FIXME if you care
+          scaled_point = this.spaceToDis(point, true);
+
+        } else {
+          prev = { ...point };
+          continue;
+        }
       }
+      
+      scaled_prev  = this.spaceToDis(prev);
+      prev = { ...point };
+
+      t_gb.line(
+        scaled_prev.x,scaled_prev.y,
+        scaled_point.x,scaled_point.y
+      );
     }
   }
   disToSpace(v, clamp = false) {
@@ -224,7 +235,7 @@ export class Seekbar {
   update() {
     if(this.playing) {
       this.x += this.vel;
-      if(this.bound_loop && this.x > this.bounds.min) {
+      if(this.bound_loop && this.x > this.bounds.max) {
         this.x = this.bounds.min;
       }
     }
@@ -261,7 +272,7 @@ export class Seekbar {
 
 export class GraphSpace {
   constructor() {
-    this.min = {'x':1,'y':1};
+    this.min = {'x':-1,'y':-1};
     this.max = {'x':1,'y':1};
     this.unit = {'x':1,'y':1};
     this.width;

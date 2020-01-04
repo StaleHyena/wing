@@ -1,6 +1,5 @@
 let demos = [
-  {
-    'name':'greys',
+  { 'name':'greys',
     'f':(p, vals) => {
       p.colorMode(p.RGB);
       p.fill(vals[1]*255);
@@ -8,8 +7,7 @@ let demos = [
       p.rect(0,0, p.width,p.height);
     }
   },
-  {
-    'name':'colours',
+  { 'name':'colours',
     'f':(p, vals) => {
       p.colorMode(p.HSB, 360);
       p.noStroke();
@@ -19,8 +17,7 @@ let demos = [
       p.rect(0,0, p.width, p.height);
     }
   },
-  {
-    'name':'ciclo',
+  { 'name':'ciclo',
     'f':(p, vals) => {
       let r = (p.min(p.width,p.height)/2) * 0.8;
       let c = p.createVector(p.width/2, p.height/2);
@@ -66,8 +63,7 @@ let demos = [
       p.line(tsp_x,c.y, tep.x,tep.y);
     }
   },
-  {
-    'name' : 'ball',
+  { 'name' : 'ball',
     'f': (p, vals) => {
       p.colorMode(p.RGB);
       p.fill(253,102,0);
@@ -77,8 +73,7 @@ let demos = [
       p.circle(p.width/2, p.height/2, d*vals[1]);
     }
   },
-  {
-    'name': 'ball inv',
+  { 'name': 'ball inv',
     'f': (p, vals) => {
       p.colorMode(p.RGB);
       p.background(0);
@@ -91,6 +86,29 @@ let demos = [
         p.fill(2,153,255);
       }
       p.circle(p.width/2, p.height/2, d*y);
+    },
+  },
+  { 'name': 'leg',
+    'setup': (p, ram) => {
+      ram.offbuf = p.createCanvas(p.width, p.height);
+    },
+    'f': (p, vals, ram) => {
+      let v = [];
+      let r = 30;
+      let a = vals[0];
+      v[0] = p.createVector(p.width/2, p.height/2);
+      v[1] = p.createVector(v[0].x + p.cos(a)*r, v[0].y + p.sin(a)*r);
+
+      let clr = p.color(0, 12);
+      p.noStroke();
+      p.fill(clr);
+      p.rect(0,0, p.width, p.height);
+      p.stroke("#ffffff");
+      p.strokeWeight(3);
+      p.line(v[0].x, v[0].y, v[1].x, v[1].y);
+      p.stroke("#ff2222");
+      p.strokeWeight(8);
+      p.point(v[1].x, v[1].y);
     },
   },
 ];
