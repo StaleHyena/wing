@@ -49,6 +49,8 @@ const sketch = (p) => {
       () => { ui.updateStatus("Conectado", "#34eb77"); });
     net.addCallback('clients',
       (c) => { num_clients = c; ui.updateClientCount(num_clients); });
+    net.addCallback('accepted',
+      () => { ui.post(); });
     net.addCallback('denied',
       () => { ui.updateStatus("Pedido de admin recusado", "#ff0000"); });
     net.addCallback('revoked',
@@ -75,7 +77,6 @@ const sketch = (p) => {
           }
         );
         step_max = graph.space.width/40;
-        ui.ready();
       });
 
     num_clients = 0;

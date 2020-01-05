@@ -23,6 +23,12 @@ class Network {
           onDisconnect(reason);
         }
       });
+      this.socket.on('accepted', () => {
+        let onAccepted = this.callbacks.get('accepted');
+        if(onAccepted) {
+          onAccepted();
+        }
+      });
       this.socket.on('denied', () => {
         let onDenied = this.callbacks.get('denied');
         if(onDenied) {
@@ -39,6 +45,14 @@ class Network {
       let onConnect = this.callbacks.get('connect');
       if(onConnect) {
         onConnect();
+      }
+    });
+    this.socket.on('reconnect', () => {
+      this.emitData('admin');
+      console.log('reconnecting');
+      let onReconnect = this.callbacks.get('reconnect');
+      if(onReconnect) {
+        onReconnect();
       }
     });
   }

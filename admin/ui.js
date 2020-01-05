@@ -37,7 +37,7 @@ class UserInterface {
     this.expr_field.input(newExpr);
   }
 
-  ready() {
+  post() {
     // Initialize with default values
     newGraphIn();
     newDemoIn();

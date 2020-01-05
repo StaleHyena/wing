@@ -17,6 +17,7 @@ const   libs_dir = path.join(__dirname, 'libs');
 let vals = [0,0];
 let demo = ""; // hard-coded default
 let admin_socket = -1;
+let adminDemoSyncer = null;
 
 function setupTUI() {
   setInterval(printVals, 500);
@@ -51,23 +52,24 @@ function setupNet() {
       let s = 'DISCONN> Socket ' + socket.id;
       if(socket.id == admin_socket) {
         s += ' (admin)';
-        admin_socket = -1;
+        clearAdmin();
       }
       s += ' has disconnected -- ' + reason;
       console.log(s);
       emitClientsAdmin();
     });
   });
-
 }
 
 function adminEvents(socket) {
   socket.on('admin', () => {
     if(admin_socket == -1) {
       admin_socket = socket.id;
-      console.log('ADMIN> ' + socket.id + ' is the new admin.');
+      console.log(`ADMIN> ${socket.id} is the new admin.`);
       emitClientsAdmin();
 
+      // Can't think of a reason why the if's should fail, but they are there.
+      // FIXME maybe
       socket.on('vals', (v) => {
         if(socket.id == admin_socket) {
           vals = v;
@@ -77,11 +79,13 @@ function adminEvents(socket) {
       socket.on('demo', (d) => {
         if(socket.id == admin_socket) {
           demo = d;
-          socket.broadcast.emit('demo', demo);
+          socket.broadcast.emit('demo', d);
         }
       });
+
+      socket.emit('accepted');
     } else {
-      console.log(socket.id + ' failed to become admin.');
+      console.log(`ADMIN> ${socket.id} failed to become admin.`);
       socket.emit('denied');
       socket.disconnect();
     }
@@ -92,10 +96,15 @@ function revokeAdmin() {
   if(admin_socket != -1) {
     io.to(admin_socket).emit('revoked');
     console.log('ADMIN> Revoked admin of ' + admin_socket);
-    admin_socket = -1;
+    clearAdmin();
   } else {
     console.log('ADMIN> No admin to revoke!');
   }
+}
+
+function clearAdmin() {
+  admin_socket = -1;
+  console.log('ADMIN> There is now no admin.');
 }
 
 function emitClientsAdmin() {
