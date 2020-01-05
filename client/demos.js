@@ -94,19 +94,28 @@ let demos = [
     },
     'f': (p, vals, mem) => {
       let v = [];
-      let r = 30;
-      let a = vals[0];
+      let a = -vals[1];
+      let joint_clr = p.color("#ff2222");
+      let joint_size = 8;
+      let leg_clr = p.color("#ffffff");
+      let leg_width = 3;
+      let leg_length = p.min(p.width, p.height)/4;
       v[0] = p.createVector(p.width/2, p.height/2);
-      v[1] = p.createVector(v[0].x + p.cos(a)*r, v[0].y + p.sin(a)*r);
+      v[1] = p.createVector(v[0].x + p.cos(a)*leg_length, v[0].y + p.sin(a)*leg_length);
 
       p.background(0);
-      p.stroke("#ffffff");
-      p.strokeWeight(3);
-      p.line(v[0].x, v[0].y, v[1].x, v[1].y);
-      mem.offbuf.stroke("#ff2222");
-      mem.offbuf.strokeWeight(8);
+      mem.offbuf.background(0,12);
+
+      mem.offbuf.stroke(joint_clr);
+      mem.offbuf.strokeWeight(joint_size);
       mem.offbuf.point(v[1].x, v[1].y);
       p.image(mem.offbuf, 0,0);
+      p.stroke(leg_clr);
+      p.strokeWeight(leg_width);
+      p.line(v[0].x, v[0].y, v[1].x, v[1].y);
+      p.stroke(joint_clr);
+      p.strokeWeight(joint_size);
+      p.point(v[1].x, v[1].y);
     },
   },
 ];
