@@ -48,7 +48,9 @@ _example.com:port_/admin/ | Admin page
 _example.com:port_/client/ | Client page
 _example.com:port_ | Redirect to client page<br/>
 
-**Note:** Only one admin is allowed to control things. The true admin is the first person who connected to the Admin page.
+The default configuration uses port 80, which lets you omit the port number from the url in most web browsers.<br/>
+
+**Note:** Wing currently supports only one admin, who is the first browser that connected to the Admin page.
 ### Admin
 You have:<br/>
 * A play/pause button for the autoscroller
