@@ -89,26 +89,24 @@ let demos = [
     },
   },
   { 'name': 'leg',
-    'setup': (p, ram) => {
-      ram.offbuf = p.createCanvas(p.width, p.height);
+    'setup': (p, mem) => {
+      mem.offbuf = p.createGraphics(p.width, p.height);
     },
-    'f': (p, vals, ram) => {
+    'f': (p, vals, mem) => {
       let v = [];
       let r = 30;
       let a = vals[0];
       v[0] = p.createVector(p.width/2, p.height/2);
       v[1] = p.createVector(v[0].x + p.cos(a)*r, v[0].y + p.sin(a)*r);
 
-      let clr = p.color(0, 12);
-      p.noStroke();
-      p.fill(clr);
-      p.rect(0,0, p.width, p.height);
+      p.background(0);
       p.stroke("#ffffff");
       p.strokeWeight(3);
       p.line(v[0].x, v[0].y, v[1].x, v[1].y);
-      p.stroke("#ff2222");
-      p.strokeWeight(8);
-      p.point(v[1].x, v[1].y);
+      mem.offbuf.stroke("#ff2222");
+      mem.offbuf.strokeWeight(8);
+      mem.offbuf.point(v[1].x, v[1].y);
+      p.image(mem.offbuf, 0,0);
     },
   },
 ];

@@ -5,22 +5,21 @@ import { demos, demoFromName } from './demos.js'
 let socket;
 let vals;
 let demo;
-let custom_data;
+let persistent_mem;
 
 const sketch = (p) => {
   p.setup = function() {
     p.createCanvas(window.innerWidth, window.innerHeight);
     demo = demos[0];
     vals = [0,0]
-    setupNet();
+    setupNet(p);
     p.background(0);
-    custom_data = {};
   }
 
   p.draw = function() {
     if(demo != null) {
       let f = demo.f;
-      f(p, vals, custom_data);
+      f(p, vals, persistent_mem);
     } else {
       p.fill(255);
       p.textAlign(p.CENTER);
@@ -29,13 +28,20 @@ const sketch = (p) => {
   }
 }
 
-function setupNet() {
+function setupNet(p) {
   socket = socketio();
   socket.on('vals', (v) => {
     vals = v;
   });
   socket.on('demo', (d) => {
+    // No need to change if already on it
+    if(demo != null && d.name == demo.name) { return; }
+
     demo = demoFromName(d);
+    persistent_mem = {};
+    if(demo != null && demo.hasOwnProperty('setup')) {
+      demo.setup(p, persistent_mem);
+    }
   });
 }
 
