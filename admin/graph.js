@@ -213,6 +213,7 @@ export class Seekbar {
     this.bound_loop = false;
     this.bounds = { 'min': -1, 'max': 1 }
     this.vel = 0;
+    this.max_vel = 0.25;
     this.playing = false;
   }
   setX(x) {

@@ -4,22 +4,10 @@ import { create, all } from 'mathjs/number'
 
 const math = create(all);
 class UserInterface {
-  constructor() {
-    this.ui_div;
-    this.playpause_btn;
-    this.graph_sel;
-    this.demo_sel;
-    this.clientCount_p;
-    this.status_p;
-    this.step_slider;
-    this.expr_field;
-    this.callbacks = new Map();
-  }
-
   init() {
     this.ui_div = p.select('#ui-bar');
     this.playpause_btn  = p.select('#playpause');
-    this.graph_sel      = p.select('#graph-menu');
+    this.expr_sel      = p.select('#expr-menu');
     this.demo_sel       = p.select('#demo-menu');
     this.clientCount_p  = p.select('#client-counter');
     this.status_p       = p.select('#status-txt');
@@ -31,7 +19,7 @@ class UserInterface {
     this.populateMenus();
 
     this.playpause_btn.mousePressed(playpause);
-    this.graph_sel.changed(newGraphIn);
+    this.expr_sel.changed(newGraphIn);
     this.demo_sel.changed(newDemoIn);
     this.step_slider.changed(newStepIn);
     this.expr_field.input(newExpr);
@@ -47,7 +35,7 @@ class UserInterface {
   populateMenus() {
     let i,l;
     l = graph_presets.length;
-    for(i=0; i<l; i++) { this.graph_sel.option(graph_presets[i].name); }
+    for(i=0; i<l; i++) { this.expr_sel.option(graph_presets[i].name); }
     l = demos.length;
     for(i=0; i<l; i++) { this.demo_sel.option(demos[i].name); }
   }
@@ -76,7 +64,7 @@ export default ui;
 
 // Because they are called by events, they don't receive the implict this
 export function newGraphIn() {
-  let name = ui.graph_sel.value();
+  let name = ui.expr_sel.value();
   let g = graphFromName(name);
   if(g == null) {
     console.log('Couldn\'t find graph named "' + name + '"!');

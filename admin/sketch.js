@@ -6,16 +6,19 @@ import { create, all } from 'mathjs/number'
 
 const math = create(all);
 let canvas;
-let num_clients;
 let aspect_ratio;
-
-let cur_demo;
-
 let graph;
-let scrub_step;
-let step_max;
-
 let need_redraw;
+
+// States related to user input
+let leftMousePressed;
+let mouseGracePeriod;
+// States for graph panning
+let panning;
+let start_pan_pos;
+let last_pan_diff;
+
+let scroll_factor = 0.1; // Graph zooming
 
 const sketch = (p) => {
   p.setup = function() {
@@ -31,16 +34,26 @@ const sketch = (p) => {
     window.p = p; // Make it accessible globally
 
     ui.init();
-    ui.addCallback('demo', updateDemo);
-    ui.addCallback('step', updateStep);
-    ui.addCallback('play/pause', playpause);
+    ui.addCallback('demo', (d) => { net.emitData('demo', d.name); });
+    ui.addCallback('step', (v) => {
+      if(graph) {
+        let max_vel = graph.seekbar.max_vel;
+        let step = p.map(v, 0.0,1.0, 0.0,max_vel);
+        graph.seekbar.setVel(step);
+      }
+    });
+    ui.addCallback('play/pause', () => {
+      if(!graph) { return; }
+      graph.seekbar.playing ^= true;
+      mouseGracePeriod = 20;
+    });
     ui.addCallback('expr', expr);
 
     net.init();
     net.addCallback('connect',
       () => { ui.updateStatus("Conectado", "#34eb77"); });
     net.addCallback('clients',
-      (c) => { num_clients = c; ui.updateClientCount(num_clients); });
+      (count) => { ui.updateClientCount(count); });
     net.addCallback('accepted',
       () => { ui.post(); });
     net.addCallback('denied',
@@ -68,11 +81,8 @@ const sketch = (p) => {
             func:(x) => { return 0; },
           }
         );
-        step_max = graph.space.width/40;
         ui.post();
       });
-
-    num_clients = 0;
 
     leftMousePressed = false;
     mouseGracePeriod = 0;
@@ -82,12 +92,13 @@ const sketch = (p) => {
     if(graph) {
       graph.update();
 
-      let selx = graph.disToSpace({'x':getX(),'y':0}, true).x;
-      if(selx) {
-        graph.seekbar.setX(selx);
+      if(leftMousePressed) {
+        let selx = graph.disToSpace({'x':p.mouseX,'y':0}, true).x;
+        if(selx) {
+          graph.seekbar.setX(selx);
+        }
       }
-
-      if(panning) {
+      else if(panning) {
         panGraph(p.mouseX, p.mouseY);
       }
       if(need_redraw) {
@@ -95,14 +106,12 @@ const sketch = (p) => {
         graph.drawExprs();
         need_redraw = false;
       }
-      else if(mouseGracePeriod > 0) {
+      if(mouseGracePeriod > 0) {
         mouseGracePeriod -= 1;
       }
-      
-      let seekb = graph.seekbar;
-      let v = seekb.getVals(graph.exprman);
+      let v = graph.seekbar.getVals(graph.exprman);
       if(v && v[0]) {
-        net.emitData('vals', [seekb.x,v[0]]);
+        net.emitData('vals', [graph.seekbar.x,v[0]]);
       }
 
       graph.draw(0,0);
@@ -113,24 +122,7 @@ const sketch = (p) => {
       p.text("Sem gráfico!", p.width/2, p.height/2);
     }
   }
-
-  p.keyPressed = function() {
-    if(p.keyCode == 32) { //spacebar
-      playpause();
-    }
-  }
 }
-
-function getX() {
-  if(leftMousePressed) {
-    return p.mouseX;
-  }
-  return undefined;
-}
-
-let panning;
-let start_pan_pos;
-let last_pan_diff;
 function panGraph(mx,my) {
   if(graph) {
     if(last_pan_diff) {
@@ -147,25 +139,11 @@ function panGraph(mx,my) {
     last_pan_diff = diff.copy();
   }
 }
-
 function zoomGraph(z) {
   if(graph) {
     graph.space.zoom(z);
     need_redraw = true;
   }
-}
-
-function updateDemo(d) { cur_demo = d; net.emitData('demo', d.name); }
-function updateStep(v) {
-  if(graph) {
-    let step = p.map(p.pow(v,3), 0.0,1.0, 0.0,step_max);
-    graph.seekbar.setVel(step);
-  }
-}
-function playpause() {
-  if(!graph) { return; }
-  graph.seekbar.playing ^= true;
-  mouseGracePeriod = 20;
 }
 function expr(e, label) {
   if(graph) {
@@ -182,9 +160,6 @@ function expr(e, label) {
     }
   }
 }
-
-let leftMousePressed;
-let mouseGracePeriod;
 function onMousePressed() {
   let t = mouseGracePeriod == 0 && p.mouseIsPressed;
   if(t) {
@@ -192,6 +167,8 @@ function onMousePressed() {
       leftMousePressed = true;
     } else if(p.mouseButton == p.CENTER) {
       if(!panning && graph) {
+        // Setup state machine for panning
+        // --really-- ugly code, the whole panning thing
         let mp = p.createVector(p.mouseX, p.mouseY);
         let sp = graph.display_space.map(mp, graph.space);
         start_pan_pos = p.createVector(sp.x, sp.y);
@@ -203,15 +180,13 @@ function onMousePressed() {
     leftMousePressed = false;
   }
 }
-
 function onMouseReleased() {
   leftMousePressed = false;
   panning = false;
 }
-
 function onMouseWheel(ev) {
   if(ev.deltaY) {
-    zoomGraph(ev.deltaY*0.1);
+    zoomGraph(ev.deltaY*scroll_factor);
   }
 }
 
