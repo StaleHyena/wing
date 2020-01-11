@@ -301,20 +301,29 @@ export class GraphSpace {
       'y': p.map(y, s.y,S.y, o.y,O.y)
     };
   }
-  pan() {
 
+  pan(anchor, hand) {
+    let dx = anchor.x - hand.x;
+    let dy = anchor.y - hand.y;
+    if(dx || dy) {
+      this.min.x = this.min.x - dx;
+      this.max.x = this.max.x - dx;
+      this.min.y = this.min.y - dy;
+      this.max.y = this.max.y - dy;
+    }
   }
-  zoom() {
 
+  zoom(delta) {
+    if(delta) {
+      const ratio = this.width/this.height;
+      this.min.x = this.min.x - delta * ratio;
+      this.max.x = this.max.x + delta * ratio;
+      this.min.y = this.min.y - delta;
+      this.max.y = this.max.y + delta;
+    }
   }
-  center() {
-
-  }
-  ogZoom() {
-
-  }
-  reset() {
-
-  }
+  center() {}
+  ogZoom() {}
+  reset() {}
 }
 

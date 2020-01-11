@@ -15,15 +15,7 @@ let graph;
 let scrub_step;
 let step_max;
 
-let pan;
-let panning;
-let ranges;
-let p_ranges;
-let dirtyRanges;
-let start_pointerPos;
-
-let leftMousePressed;
-let mouseGracePeriod;
+let need_redraw;
 
 const sketch = (p) => {
   p.setup = function() {
@@ -60,7 +52,7 @@ const sketch = (p) => {
     fetch("/graphconf.json")
       .then((res) => res.json())
       .then((conf) => {
-        ranges = conf["default-ranges"];
+        let ranges = conf["default-ranges"];
         let gspace = new GraphSpace();
         gspace.setMin(ranges.min);
         gspace.setMax(ranges.max);
@@ -68,7 +60,7 @@ const sketch = (p) => {
         graph = new Graph(p.width,p.height, gspace, conf);
         window.graph = graph;
         panning = false;
-        dirtyRanges = false;
+        need_redraw = false;
         graph.updateGrid();
         graph.add(
           {
@@ -97,11 +89,10 @@ const sketch = (p) => {
       if(panning) {
         panGraph(p.mouseX, p.mouseY);
       }
-      if(dirtyRanges) {
-        graph.updateRanges(ranges);
+      if(need_redraw) {
         graph.updateGrid();
         graph.drawExprs();
-        dirtyRanges = false;
+        need_redraw = false;
       }
       else if(mouseGracePeriod > 0) {
         mouseGracePeriod -= 1;
@@ -136,30 +127,27 @@ function getX() {
   return undefined;
 }
 
-function panGraph(x,y) {
+let panning;
+let start_pan_space;
+let start_pan_pos;
+function panGraph(mx,my) {
   if(graph) {
-    const dx = (x - start_pointerPos.x)/50;
-    const dy = (y - start_pointerPos.y)/50;
-    if(dx || dy) {
-      ranges.min.x = p_ranges.min.x - dx;
-      ranges.max.x = p_ranges.max.x - dx;
-      ranges.min.y = p_ranges.min.y - dy;
-      ranges.max.y = p_ranges.max.y - dy;
-      dirtyRanges = true;
-    }
+    graph.space = Object.assign(
+      Object.create(Object.getPrototypeOf(start_pan_space)),
+      start_pan_space
+    );
+    let mouse_pos = p.createVector(mx,my);
+    let pp = graph.display_space.map(mouse_pos, graph.space);
+    console.log("p",pp);
+    graph.space.pan(start_pan_pos, pp);
+    need_redraw = true;
   }
 }
 
 function zoomGraph(z) {
   if(graph) {
-    if(z) {
-      const ratio = graph.space.width/graph.space.height;
-      ranges.min.x = ranges.min.x - z * ratio;
-      ranges.max.x = ranges.max.x + z * ratio;
-      ranges.min.y = ranges.min.y - z;
-      ranges.max.y = ranges.max.y + z;
-      dirtyRanges = true;
-    }
+    graph.space.zoom(z);
+    need_redraw = true;
   }
 }
 
@@ -192,30 +180,26 @@ function expr(e, label) {
   }
 }
 
+let leftMousePressed;
+let mouseGracePeriod;
 function onMousePressed() {
   let t = mouseGracePeriod == 0 && p.mouseIsPressed;
   if(t) {
     if(p.mouseButton == p.LEFT) {
       leftMousePressed = true;
     } else if(p.mouseButton == p.CENTER) {
-      if(!panning) {
-        start_pointerPos = p.createVector(p.mouseX, p.mouseY);
-        p_ranges = {
-          unit: {
-            x:ranges.unit.x,
-            y:ranges.unit.y,
-          },
-          min: {
-            x:ranges.min.x,
-            y:ranges.min.y,
-          },
-          max: {
-            x:ranges.max.x,
-            y:ranges.max.y,
-          },
-        };
+      if(!panning && graph) {
+        let mp = p.createVector(p.mouseX, p.mouseY);
+        let sp = graph.display_space.map(mp, graph.space);
+        start_pan_space = Object.assign(
+          Object.create(Object.getPrototypeOf(graph.space)),
+          graph.space
+        );
+        start_pan_pos = p.createVector(sp.x, sp.y);
         panning = true;
-        console.log('init', p_ranges, start_pointerPos);
+        console.log('start_pan', start_pan_pos);
+        console.log(start_pan_space);
+        console.log(graph.space);
       }
     }
   } else {
