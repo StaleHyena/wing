@@ -159,7 +159,6 @@ function updateStep(v) {
   if(graph) {
     let step = p.map(p.pow(v,3), 0.0,1.0, 0.0,step_max);
     graph.seekbar.setVel(step);
-    console.log(`step:${step}`);
   }
 }
 function playpause() {
@@ -197,7 +196,6 @@ function onMousePressed() {
         start_pan_pos = p.createVector(sp.x, sp.y);
         last_pan_diff = undefined;
         panning = true;
-        console.log('start_pan', start_pan_pos);
       }
     }
   } else {
