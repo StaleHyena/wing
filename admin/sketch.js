@@ -69,6 +69,7 @@ const sketch = (p) => {
           }
         );
         step_max = graph.space.width/40;
+        ui.post();
       });
 
     num_clients = 0;

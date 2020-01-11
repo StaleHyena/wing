@@ -25,8 +25,8 @@ class UserInterface {
     this.status_p       = p.select('#status-txt');
     this.step_slider    = p.createSlider(0.0, 1.0, 0.5, 0.001);
     this.step_slider.parent(p.select('#step-slider'));
-    this.expr_field     = p.createInput('sin(x^2)');
-    this.expr_field.parent(p.select('#range-menu'));
+    this.expr_field     = p.createInput('sin(x)');
+    this.expr_field.parent(p.select('#expr-bar'));
     this.callbacks = new Map();
     this.populateMenus();
 

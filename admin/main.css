@@ -76,7 +76,7 @@ body {
 #status-txt {
   font-weight: bold;
 }
-#demos, #range-menu{
+#demos, #expr-bar{
   border: 0px solid transparent;
   border-radius: 10px;
   padding: 4px 10px;
