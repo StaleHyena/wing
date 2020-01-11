@@ -302,14 +302,12 @@ export class GraphSpace {
     };
   }
 
-  pan(anchor, hand) {
-    let dx = anchor.x - hand.x;
-    let dy = anchor.y - hand.y;
-    if(dx || dy) {
-      this.min.x = this.min.x - dx;
-      this.max.x = this.max.x - dx;
-      this.min.y = this.min.y - dy;
-      this.max.y = this.max.y - dy;
+  pan(d) {
+    if(d.x || d.y) {
+      this.min.x = this.min.x + d.x;
+      this.max.x = this.max.x + d.x;
+      this.min.y = this.min.y + d.y;
+      this.max.y = this.max.y + d.y;
     }
   }
 

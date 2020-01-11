@@ -128,19 +128,22 @@ function getX() {
 }
 
 let panning;
-let start_pan_space;
 let start_pan_pos;
+let last_pan_diff;
 function panGraph(mx,my) {
   if(graph) {
-    graph.space = Object.assign(
-      Object.create(Object.getPrototypeOf(start_pan_space)),
-      start_pan_space
-    );
+    if(last_pan_diff) {
+      graph.space.pan(last_pan_diff.copy().mult(-1));
+    }
     let mouse_pos = p.createVector(mx,my);
-    let pp = graph.display_space.map(mouse_pos, graph.space);
-    console.log("p",pp);
-    graph.space.pan(start_pan_pos, pp);
+    mouse_pos = graph.display_space.map(mouse_pos, graph.space);
+    let diff = p.createVector(0,0);
+    diff.x = start_pan_pos.x - mouse_pos.x;
+    diff.y = start_pan_pos.y - mouse_pos.y;
+
+    graph.space.pan(diff);
     need_redraw = true;
+    last_pan_diff = diff.copy();
   }
 }
 
@@ -191,15 +194,10 @@ function onMousePressed() {
       if(!panning && graph) {
         let mp = p.createVector(p.mouseX, p.mouseY);
         let sp = graph.display_space.map(mp, graph.space);
-        start_pan_space = Object.assign(
-          Object.create(Object.getPrototypeOf(graph.space)),
-          graph.space
-        );
         start_pan_pos = p.createVector(sp.x, sp.y);
+        last_pan_diff = undefined;
         panning = true;
         console.log('start_pan', start_pan_pos);
-        console.log(start_pan_space);
-        console.log(graph.space);
       }
     }
   } else {
