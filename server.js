@@ -20,7 +20,7 @@ let admin_socket = -1;
 let adminDemoSyncer = null;
 
 function setupTUI() {
-  setInterval(printVals, 500);
+  setInterval(printVals, 100);
   let stdin = process.stdin;
   stdin.setRawMode(true);
   stdin.setEncoding('utf8');
